@@ -1,4 +1,4 @@
-const CACHE_NAME = 'weather-clothes-cache-v15';
+const CACHE_NAME = 'weather-clothes-cache-v16';
 const urlsToCache = [
   './',
   './index.html',
@@ -24,7 +24,7 @@ self.addEventListener('activate', event => {
       return Promise.all(
         cacheNames.map(cache => {
           if (cache !== CACHE_NAME) {
-            return caches.delete(cache); // 古いキャッシュ（v14など）を削除
+            return caches.delete(cache); // 古いキャッシュを削除
           }
         })
       );

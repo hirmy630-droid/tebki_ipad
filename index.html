@@ -243,24 +243,6 @@
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <!-- 結果画面内の日付タブ切替 -->
-                        <div class="inline-flex bg-[#2c2c2e] p-1 rounded-xl border border-[#3a3a3c]">
-                            <button 
-                                type="button" 
-                                id="resTabToday"
-                                onclick="switchResultDay('today')" 
-                                class="ios-btn px-3 py-1 text-[14px] font-semibold rounded-lg text-[#aeaeb2]">
-                                今日
-                            </button>
-                            <button 
-                                type="button" 
-                                id="resTabTomorrow"
-                                onclick="switchResultDay('tomorrow')" 
-                                class="ios-btn px-3 py-1 text-[14px] font-semibold rounded-lg bg-[#ff9500] text-white shadow">
-                                明日
-                            </button>
-                        </div>
-
                         <span id="forecastApparentBadge" class="text-[14px] bg-orange-500/20 text-orange-400 font-bold px-2.5 py-1 rounded-xl border border-orange-500/30">
                             体感 --℃
                         </span>
@@ -512,14 +494,6 @@
             }
         }
 
-        function switchResultDay(day) {
-            selectedDay = day;
-            updateTabStyles();
-            if (cachedForecastData && cachedForecastData[selectedDay]) {
-                renderForecastView(cachedForecastData[selectedDay]);
-            }
-        }
-
         function updateTabStyles() {
             const isToday = (selectedDay === 'today');
             
@@ -534,18 +508,6 @@
                 } else {
                     mTomorrow.className = 'ios-btn py-1.5 text-[14px] font-semibold rounded-lg transition-all bg-[#ff9500] text-white shadow-md';
                     mToday.className = 'ios-btn py-1.5 text-[14px] font-semibold rounded-lg transition-all text-[#aeaeb2] hover:text-white';
-                }
-            }
-
-            const resToday = document.getElementById('resTabToday');
-            const resTomorrow = document.getElementById('resTabTomorrow');
-            if (resToday && resTomorrow) {
-                if (isToday) {
-                    resToday.className = 'ios-btn px-3 py-1 text-[14px] font-semibold rounded-lg bg-[#ff9500] text-white shadow';
-                    resTomorrow.className = 'ios-btn px-3 py-1 text-[14px] font-semibold rounded-lg text-[#aeaeb2]';
-                } else {
-                    resTomorrow.className = 'ios-btn px-3 py-1 text-[14px] font-semibold rounded-lg bg-[#ff9500] text-white shadow';
-                    resToday.className = 'ios-btn px-3 py-1 text-[14px] font-semibold rounded-lg text-[#aeaeb2]';
                 }
             }
 
