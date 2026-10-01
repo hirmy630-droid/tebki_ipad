@@ -1,589 +1,1123 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>金物割付 - KYOWA ROOF</title>
-    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>明日の服装予報（iPad横画面最適化版）</title>
+    <!-- PWA Settings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon-180.png">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root {
-            --ios-bg: #000000;
-            --ios-card: #1c1c1e;
-            --ios-border: #333333;
-            --ios-orange: #ff9f0a;
-            --ios-blue: #0a84ff;
-            --ios-green: #30d158;
-            --ios-silver: #c7c7cc;
-            --ios-silver-dark: #9a9a9e;
-            --label-gray: #b0b0b5;
-            --unfocused-border: #444446;
-        }
-
-        * {
-            box-sizing: border-box;
-            -webkit-text-size-adjust: 100%;
-            -webkit-tap-highlight-color: transparent;
-        }
-
         body {
-            margin: 0;
-            background: var(--ios-bg);
-            font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            overflow-x: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", sans-serif;
+            background-color: #000000;
+            color: #f5f5f7;
+            -webkit-tap-highlight-color: transparent;
+            word-break: keep-all;
+            overflow-wrap: break-word;
         }
 
-        /* ヘッダー */
-        .header-bar {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            padding: 8px 12px;
-            border-bottom: 1px solid var(--ios-border);
-            background: var(--ios-bg);
+        /* iPadOS Safe Area Insets */
+        .safe-area-ipad {
+            padding-top: max(env(safe-area-inset-top, 14px), 14px);
+            padding-bottom: max(env(safe-area-inset-bottom, 14px), 14px);
+            padding-left: max(env(safe-area-inset-left, 18px), 18px);
+            padding-right: max(env(safe-area-inset-right, 18px), 18px);
         }
 
-        /* スリムなタブ */
-        .tab-wrapper {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            width: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            backdrop-filter: blur(15px);
-            padding: 8px 0;
-            display: flex;
-            justify-content: center;
+        .text-wrap-optimal {
+            word-break: auto-phrase;
+            overflow-wrap: anywhere;
+            line-break: strict;
         }
 
-        .tab-container {
-            display: flex;
-            background: #2c2c2e;
-            width: 92%;
-            max-width: 420px;
-            padding: 2px;
-            border-radius: 10px;
-            border: 1px solid #3a3a3c;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+        .ios-btn {
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            user-select: none;
+            -webkit-user-select: none;
         }
 
-        .tab-button {
-            flex: 1;
-            padding: 5px 0;
+        .ios-btn:active {
+            transform: scale(0.97);
+            filter: brightness(0.88);
+        }
+
+        .ios-loader {
+            border: 3.5px solid rgba(255, 255, 255, 0.15);
+            border-top-color: #ff9500;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* スクロールバーのiPadOSライクなスリムスタイリング */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
             background: transparent;
-            color: var(--ios-silver-dark);
-            font-size: 12px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: 0.2s;
-            border: 1.5px solid transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.35);
         }
 
-        .tab-button.active {
-            background: #636366;
-            color: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .main-container {
-            width: 100%;
-            max-width: 420px;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-        }
-
-        /* 計算結果パネル */
-        .result-stack { padding: 10px 12px; }
-        .result-box {
-            height: 60px;
-            padding: 0 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border: 1.5px solid var(--ios-border);
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-            margin-bottom: 8px;
-        }
-
-        .result-box-blue { background: rgba(10, 132, 255, 0.15); border-color: var(--ios-blue); }
-        .result-box-green { background: rgba(48, 209, 88, 0.15); border-color: var(--ios-green); }
-
-        .result-value {
-            font-size: 37px; 
-            font-weight: 700;
-            color: #ffffff;
-            display: flex;
-            align-items: baseline;
-            gap: 2px;
-        }
-
-        .result-label-left {
+        html, body {
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
             font-size: 14px;
-            font-weight: 700;
-            color: #ffffff;
-            text-align: left;
-            line-height: 1.2;
-            text-transform: uppercase;
+            min-font-size: 14px;
         }
-
-        .unit-text {
-            font-size: 16px;
-            font-weight: 400;
-            color: #ffffff;
-            opacity: 0.6;
-            margin-left: 2px;
+        * {
+            min-height: 0;
         }
-
-        .separator-slash {
-            font-size: 20px;
-            font-weight: 700;
-            opacity: 0.3;
-            margin: 0 6px;
-        }
-
-        /* セルグリッド - テンキーと連結 */
-        .cell-grid {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            background: var(--ios-border);
-            gap: 1px;
-            margin: 0 12px 0;
-            border-radius: 16px 16px 0 0;
-            overflow: hidden;
-            border: 1px solid var(--ios-border);
-            border-bottom: none;
-        }
-
-        .calc-cell {
-            background: #121214;
-            height: 54px;
-            padding: 0 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: relative;
-            grid-column: span 3;
-            border: 0.5px solid var(--unfocused-border);
-        }
-
-        .calc-cell-sm { height: 50px; }
-        .span-6 { grid-column: span 6 !important; }
-
-        .calc-cell.focused {
-            background: #1c1c1e;
-            box-shadow: inset 0 0 0 1.5px var(--ios-orange) !important;
-            border-color: var(--ios-orange);
-            z-index: 10;
-        }
-
-        .input-value {
-            font-size: 26px;
-            font-weight: 700;
-            color: #ffffff;
-            flex: 1;
-            text-align: right;
-        }
-
-        .input-label-left {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--label-gray);
-            margin-right: 4px;
-            white-space: nowrap;
-        }
-
-        /* テンキー - セルと連結 */
-        .keypad-container {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1px;
-            background: var(--ios-border);
-            margin: 0 12px 12px;
-            border-radius: 0 0 16px 16px;
-            overflow: hidden;
-            border: 1px solid var(--ios-border);
-        }
-
-        .key-btn {
-            background: #1c1c1e;
-            color: white;
-            height: 64px;
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.1s;
-        }
-        .key-btn:active { background: #333; }
-        .key-btn.orange { background: var(--ios-orange); font-weight: 700; }
-        .key-btn.gray { background: #2c2c2e; color: var(--label-gray); font-size: 18px; font-weight: 600; }
-
-        /* 割付表表示 */
-        .table-area { padding: 10px 12px; }
-        .table-card {
-            background: var(--ios-card);
-            border-radius: 16px;
-            overflow: hidden;
-            border: 1px solid var(--ios-border);
-        }
-        .table-cell {
-            padding: 12px 4px;
-            border-bottom: 1px solid var(--ios-border);
-            font-size: 20px;
-            font-weight: 700;
-            text-align: center;
-        }
-
-        .table-foot-row {
-            background: #2c2c2e;
-            border-top: 2px solid #444;
-        }
-
-        #toast {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(59, 130, 246, 0.95);
-            color: white;
-            padding: 16px 32px;
-            border-radius: 12px;
-            font-weight: bold;
-            opacity: 0;
-            z-index: 1000;
-            transition: 0.3s;
-            pointer-events: none;
-        }
-        #toast.show { opacity: 1; }
-        .hidden { display: none !important; }
     </style>
 </head>
-<body>
+<body class="h-full w-full bg-black flex flex-col safe-area-ipad selection:bg-orange-500 selection:text-white text-[14px] overflow-hidden">
 
-    <div id="toast">コピーしました</div>
+    <!-- iPad 11インチ横画面（1194x834）に合わせた左右分割コンテナ -->
+    <div class="w-full h-full max-w-[1380px] mx-auto flex flex-row gap-4 lg:gap-5 overflow-hidden">
+        
+        <!-- ==============================================
+             LEFT PANEL: 操作・地域管理・対象日選択（左側）
+             ============================================== -->
+        <aside class="w-[360px] lg:w-[390px] shrink-0 h-full bg-[#161618] border border-[#2c2c2e] rounded-3xl p-4 lg:p-5 shadow-2xl flex flex-col justify-between overflow-hidden">
+            
+            <div class="space-y-3.5 flex-1 flex flex-col min-h-0">
+                <!-- iPad Header -->
+                <header class="flex items-center justify-between pb-2.5 border-b border-[#2c2c2e] shrink-0">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#ff9500] to-[#ff5e3a] flex items-center justify-center text-xl shadow-md">
+                            🧥
+                        </div>
+                        <div>
+                            <h1 class="text-[18px] font-bold tracking-tight text-white flex items-center gap-1.5">
+                                明日の服装予報
+                            </h1>
+                            <p class="text-[14px] text-[#8e8e93]">気象庁公式連携 ＆ 体感温度判定</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="toggleSettingsModal(true)" class="ios-btn p-2 rounded-xl text-[#8e8e93] hover:text-white hover:bg-[#2c2c2e] transition-colors" title="設定">
+                        ⚙️
+                    </button>
+                </header>
 
-    <div class="main-container">
-        <!-- ヘッダー -->
-        <div class="header-bar">
-            <span style="font-size: 14px; font-weight: bold;">金物割付</span>
-            <span style="font-size: 12px; opacity: 0.8;">KYOWA ROOF</span>
-        </div>
+                <!-- Location Input & List Section -->
+                <div class="bg-[#1c1c1e] border border-[#2c2c2e] rounded-2xl p-3 shadow-md space-y-2.5 flex-1 flex flex-col min-h-0">
+                    <div class="flex items-center justify-between px-0.5 shrink-0">
+                        <label for="locationInput" class="text-[14px] font-medium text-[#8e8e93] flex items-center gap-1.5">
+                            <span>📍</span>
+                            <span>登録地点の選択・追加</span>
+                        </label>
+                        <span id="saveStatus" class="text-[14px] text-[#30d158] font-medium transition-opacity opacity-0">追加完了</span>
+                    </div>
+                    
+                    <!-- 追加フォーム -->
+                    <div class="flex items-center gap-2 shrink-0">
+                        <input 
+                            type="text" 
+                            id="locationInput" 
+                            placeholder="市区町村・都道府県（例: 札幌、福岡）" 
+                            class="flex-1 bg-[#2c2c2e]/80 border border-[#3a3a3c] focus:border-[#0a84ff] text-white text-[14px] rounded-xl px-3 py-2 outline-none transition-colors duration-150 placeholder-[#636366]"
+                            onkeydown="if(event.key === 'Enter') handleAddLocation()"
+                        >
+                        <button 
+                            type="button" 
+                            onclick="handleAddLocation()" 
+                            class="ios-btn bg-[#0a84ff] hover:bg-[#0071e3] active:scale-95 text-white font-semibold text-[14px] px-3.5 py-2 rounded-xl shrink-0 transition-all flex items-center gap-1">
+                            <span>追加</span>
+                        </button>
+                    </div>
 
-        <!-- タブメニュー (スリム化) -->
-        <div class="tab-wrapper">
-            <div class="tab-container">
-                <button id="tab-calc" class="tab-button active" onclick="switchTab('calc')">計算入力</button>
-                <button id="tab-table" class="tab-button" onclick="switchTab('table')">割付表</button>
-            </div>
-        </div>
-
-        <!-- 計算入力画面 -->
-        <div id="view-calc">
-            <!-- 結果パネル -->
-            <div class="result-stack">
-                <div class="result-box result-box-blue">
-                    <div class="result-label-left text-[#0a84ff]">働き計算<br>本数 / 余り</div>
-                    <div class="result-value">
-                        <span id="resQty">-</span><span class="unit-text">本</span>
-                        <span class="separator-slash">/</span>
-                        <span id="resQtyRem" class="text-2xl">-</span><span class="unit-text text-sm">㎜</span>
+                    <!-- 登録場所リスト（スクロール領域） -->
+                    <div class="flex-1 min-h-[120px] overflow-y-auto pr-1">
+                        <div id="locationList" class="space-y-1.5">
+                            <!-- JavaScriptで動的生成 -->
+                        </div>
                     </div>
                 </div>
-                <div class="result-box result-box-green">
-                    <div class="result-label-left text-[#30d158]">本数計算<br>働き / 余り</div>
-                    <div class="result-value">
-                        <span id="resWidth">-</span><span class="unit-text text-sm">㎜</span>
-                        <span class="separator-slash">/</span>
-                        <span id="resWidthRem" class="text-2xl">-</span><span class="unit-text text-sm">㎜</span>
+
+                <!-- Day Selection & Actions -->
+                <div class="bg-[#1c1c1e] border border-[#2c2c2e] rounded-2xl p-3 shadow-md space-y-2.5 shrink-0">
+                    <div>
+                        <label class="text-[14px] font-medium text-[#8e8e93] block mb-1 px-0.5">
+                            📅 対象日
+                        </label>
+                        <div class="grid grid-cols-2 gap-1.5 bg-[#2c2c2e]/70 p-1 rounded-xl border border-[#3a3a3c]">
+                            <button 
+                                type="button" 
+                                id="mainTabToday"
+                                onclick="setTargetDay('today')" 
+                                class="ios-btn py-1.5 text-[14px] font-semibold rounded-lg transition-all text-[#aeaeb2] hover:text-white">
+                                今日
+                            </button>
+                            <button 
+                                type="button" 
+                                id="mainTabTomorrow"
+                                onclick="setTargetDay('tomorrow')" 
+                                class="ios-btn py-1.5 text-[14px] font-semibold rounded-lg transition-all bg-[#ff9500] text-white shadow-md">
+                                明日
+                            </button>
+                        </div>
+                    </div>
+
+                    <button 
+                        type="button"
+                        id="checkBtn" 
+                        onclick="getRecommendation()" 
+                        class="ios-btn w-full bg-gradient-to-r from-[#ff9500] to-[#ff5e3a] hover:brightness-110 active:scale-95 text-white font-semibold text-[15px] h-11 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer touch-manipulation">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                        </svg>
+                        <span id="checkBtnLabel">明日の服装・天気を判定</span>
+                    </button>
+
+                    <!-- Loading State -->
+                    <div id="loading" class="hidden py-2 flex flex-col items-center justify-center">
+                        <div class="ios-loader w-6 h-6 mb-1.5"></div>
+                        <p id="loadingText" class="text-[14px] font-medium text-[#8e8e93] text-wrap-optimal animate-pulse text-center">
+                            気象庁データ ＆ 体感温度を取得中...
+                        </p>
+                    </div>
+
+                    <!-- 気象庁概況クイックボタン -->
+                    <button 
+                        type="button" 
+                        onclick="toggleOverviewModal(true)" 
+                        class="ios-btn w-full bg-[#2c2c2e]/70 hover:bg-[#3a3a3c] text-[#aeaeb2] hover:text-white text-[14px] py-2 px-3 rounded-xl border border-[#3a3a3c] flex items-center justify-center gap-1.5 transition-all">
+                        <span>📜</span>
+                        <span>気象庁 天気概況（公式テキスト）</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sidebar Footer -->
+            <footer class="pt-2 border-t border-[#2c2c2e] text-center shrink-0">
+                <p class="text-[14px] text-[#8e8e93]">気象庁公式データ ＆ Open-Meteo連携</p>
+                <p class="text-[14px] text-[#636366] mt-0.5">iPad 11" Landscape Split View</p>
+            </footer>
+        </aside>
+
+        <!-- ==============================================
+             RIGHT PANEL: 予報詳細・服装判定（右側メイン）
+             ============================================== -->
+        <main class="flex-1 h-full bg-[#161618] border border-[#2c2c2e] rounded-3xl p-4 lg:p-5 shadow-2xl flex flex-col overflow-hidden relative min-w-0">
+            
+            <!-- 初期プレースホルダー（未判定時） -->
+            <div id="initialPlaceholder" class="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-3">
+                <div class="w-16 h-16 rounded-2xl bg-[#2c2c2e]/50 border border-[#3a3a3c] flex items-center justify-center text-3xl shadow-inner">
+                    🌤
+                </div>
+                <div class="space-y-1 max-w-sm">
+                    <h2 class="text-lg font-bold text-white">気象・服装判定スタンバイ</h2>
+                    <p class="text-[#8e8e93] text-[14px] leading-relaxed">
+                        左側のパネルで対象地点を選択し、「服装・天気を判定」をタップしてください。
+                    </p>
+                </div>
+            </div>
+
+            <!-- 結果表示ビュー（右側メインエリアに直接展開） -->
+            <div id="resultContentArea" class="hidden flex-1 flex flex-col h-full overflow-hidden">
+                <!-- Top Status Header in Main Panel -->
+                <div class="flex items-center justify-between pb-2.5 mb-3 border-b border-[#2c2c2e] shrink-0">
+                    <div class="flex items-center gap-3">
+                        <span id="resultWeatherEmoji" class="text-3xl filter drop-shadow">🌤</span>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h2 id="forecastHeaderTitle" class="text-[17px] font-bold text-white">明日の予報</h2>
+                                <span id="resultLocationBadge" class="text-[14px] bg-[#ff9500]/15 text-[#ff9500] border border-[#ff9500]/40 px-2.5 py-0.5 rounded-full font-semibold">東京都品川区</span>
+                            </div>
+                            <p class="text-[14px] text-[#8e8e93] mt-0.5">気象庁公式発表 ＆ 体感温度計算モデル</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <!-- 結果画面内の日付タブ切替 -->
+                        <div class="inline-flex bg-[#2c2c2e] p-1 rounded-xl border border-[#3a3a3c]">
+                            <button 
+                                type="button" 
+                                id="resTabToday"
+                                onclick="switchResultDay('today')" 
+                                class="ios-btn px-3 py-1 text-[14px] font-semibold rounded-lg text-[#aeaeb2]">
+                                今日
+                            </button>
+                            <button 
+                                type="button" 
+                                id="resTabTomorrow"
+                                onclick="switchResultDay('tomorrow')" 
+                                class="ios-btn px-3 py-1 text-[14px] font-semibold rounded-lg bg-[#ff9500] text-white shadow">
+                                明日
+                            </button>
+                        </div>
+
+                        <span id="forecastApparentBadge" class="text-[14px] bg-orange-500/20 text-orange-400 font-bold px-2.5 py-1 rounded-xl border border-orange-500/30">
+                            体感 --℃
+                        </span>
                     </div>
                 </div>
-            </div>
 
-            <!-- 入力パネル (連結デザイン) -->
-            <div class="cell-grid">
-                <div class="calc-cell calc-cell-sm" onclick="focusInput('pitch')">
-                    <span class="input-label-left text-[#0a84ff]">働き(@)</span>
-                    <div id="display-pitch" class="input-value text-[#0a84ff]">0</div>
-                </div>
-                <div class="calc-cell calc-cell-sm" onclick="focusInput('count')">
-                    <span class="input-label-left text-[#30d158]">本数(N)</span>
-                    <div id="display-count" class="input-value text-[#30d158]">0</div>
-                </div>
-                <div class="calc-cell span-6 focused" onclick="focusInput('totalLength')">
-                    <span class="input-label-left">全幅 (W)</span>
-                    <div id="display-totalLength" class="input-value">0</div>
-                </div>
-            </div>
+                <!-- スクロール可能なダッシュボードコンテンツ -->
+                <div class="flex-1 overflow-y-auto pr-1 space-y-3">
+                    
+                    <!-- 2カラム：気象詳細 ＆ 推奨服装 -->
+                    <div class="grid grid-cols-2 gap-3.5">
+                        <!-- 気象予報詳細カード -->
+                        <div class="bg-[#1c1c1e] rounded-2xl p-3.5 border border-[#2c2c2e] shadow-lg flex flex-col justify-between">
+                            <div class="flex items-center justify-between border-b border-[#2c2c2e] pb-1.5 mb-1.5">
+                                <h3 class="text-[14px] font-bold text-white flex items-center gap-1.5">
+                                    <span>📊</span>
+                                    <span>気象庁 天気・気温詳細</span>
+                                </h3>
+                                <span class="text-[14px] text-[#8e8e93]">公式データ</span>
+                            </div>
+                            <div id="forecastSection" class="text-[14px] font-medium text-[#d1d1d6] leading-relaxed space-y-1">
+                                <!-- JS動的生成 -->
+                            </div>
+                        </div>
 
-            <!-- テンキー -->
-            <div class="keypad-container">
-                <button class="key-btn" onclick="pressKey('7')">7</button>
-                <button class="key-btn" onclick="pressKey('8')">8</button>
-                <button class="key-btn" onclick="pressKey('9')">9</button>
-                <button class="key-btn gray" onclick="pressKey('backspace')">⇦</button>
-                
-                <button class="key-btn" onclick="pressKey('4')">4</button>
-                <button class="key-btn" onclick="pressKey('5')">5</button>
-                <button class="key-btn" onclick="pressKey('6')">6</button>
-                <button class="key-btn gray" onclick="pressKey('clearAll')">AC</button>
-                
-                <button class="key-btn" onclick="pressKey('1')">1</button>
-                <button class="key-btn" onclick="pressKey('2')">2</button>
-                <button class="key-btn" onclick="pressKey('3')">3</button>
-                <button class="key-btn orange row-span-2 h-full" id="enter-btn-label" onclick="pressKey('enter')">⏎</button>
-                
-                <button class="key-btn" onclick="pressKey('0')">0</button>
-                <button class="key-btn" onclick="pressKey('00')">00</button>
-                <button class="key-btn" onclick="pressKey('000')">000</button>
-            </div>
-        </div>
-
-        <!-- 割付表画面 -->
-        <div id="view-table" class="hidden">
-            <div class="table-area">
-                <div class="table-card">
-                    <div class="bg-[#2c2c2e] p-3 flex justify-between items-center border-b border-[#444]">
-                        <span class="font-bold text-base">全幅: <span id="table-badge-L">-</span>㎜</span>
-                        <span class="text-sm bg-[#ff9f0a] px-2 py-0.5 rounded font-bold text-black shadow-sm">墨出し寸法</span>
+                        <!-- 推奨服装カード（厳格基準） -->
+                        <div class="bg-gradient-to-br from-[#ff9500]/15 to-[#ff5e3a]/10 rounded-2xl p-3.5 border border-[#ff9500]/40 shadow-xl flex flex-col justify-between">
+                            <div class="flex items-center justify-between border-b border-[#ff9500]/30 pb-1.5 mb-1.5">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-base">👔</span>
+                                    <h3 class="text-[15px] font-bold text-[#ff9500]">推奨服装（体感基準）</h3>
+                                </div>
+                                <span id="criteriaBadge" class="text-[14px] bg-[#1c1c1e]/90 text-white/90 px-2.5 py-0.5 rounded-lg border border-[#ff9500]/30 font-semibold">--</span>
+                            </div>
+                            
+                            <div id="outfitSection" class="space-y-2">
+                                <!-- JS動的生成 -->
+                            </div>
+                        </div>
                     </div>
-                    <table class="w-full">
-                        <thead class="shadow-md">
-                            <tr class="bg-[#2c2c2e] text-[14px] text-zinc-400 font-bold border-b border-[#444]">
-                                <th class="py-3 border-r border-[#444] w-1/2 text-[#0a84ff] tracking-wider">働き計算 (@<span id="th-W">-</span>)</th>
-                                <th class="py-3 w-1/2 text-[#30d158] tracking-wider">本数計算 (N<span id="th-N">-</span>)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="detailTableBody"></tbody>
-                        <tfoot class="table-foot-row shadow-inner">
-                            <tr class="font-bold border-t border-[#444]">
-                                <td class="py-3 border-r border-[#444] text-center text-[#0a84ff]">
-                                    <span class="text-[14px] block opacity-70 font-bold mb-0.5">働き計算 本数</span>
-                                    <span class="text-[18px]"><span id="foot-resQty">-</span>本</span>
-                                </td>
-                                <td class="py-3 text-center text-[#30d158]">
-                                    <span class="text-[14px] block opacity-70 font-bold mb-0.5">本数計算 働き幅</span>
-                                    <span class="text-[18px]"><span id="foot-resWidth">-</span>㎜</span>
-                                </td>
-                            </tr>
-                        </tfoot>
-                    </table>
+
+                    <!-- 朝・昼・夜の気温＆寒暖差対策タイムライン -->
+                    <div class="bg-[#1c1c1e] rounded-2xl p-3.5 border border-[#2c2c2e] shadow-lg space-y-2">
+                        <div class="flex items-center justify-between px-0.5">
+                            <span class="font-bold text-[#ff9500] text-[14px] flex items-center gap-1.5">
+                                <span>🕒</span>
+                                <span>朝・昼・夜の寒暖差対策タイムライン</span>
+                            </span>
+                            <span class="text-[14px] text-[#8e8e93]">Open-Meteo Hourly連動</span>
+                        </div>
+                        <div id="timeTimeline" class="grid grid-cols-3 gap-3 text-center">
+                            <!-- JS動的生成 -->
+                        </div>
+                    </div>
+
+                    <!-- 天気・風・寒暖差のアドバイスバー -->
+                    <div id="accessoryAdvice" class="bg-[#1c1c1e]/80 rounded-2xl p-3.5 border border-[#3a3a3c] text-[14px] text-[#aeaeb2] leading-relaxed">
+                        <!-- Dynamic accessory notice -->
+                    </div>
+
                 </div>
+            </div>
+
+            <!-- エラー表示カード -->
+            <div id="errorBox" class="hidden absolute inset-x-6 top-6 bg-[#2c1517] border border-[#ff453a]/40 rounded-2xl p-4 text-[14px] text-[#ff453a] leading-relaxed z-30 shadow-2xl"></div>
+
+        </main>
+    </div>
+
+    <!-- JMA Overview Popup Modal -->
+    <div id="overviewModal" class="hidden fixed inset-0 z-[60] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-[#1c1c1e] border border-[#2c2c2e] rounded-3xl p-5 w-full max-w-lg shadow-2xl space-y-3 flex flex-col max-h-[85vh]">
+            <div class="flex items-center justify-between border-b border-[#2c2c2e] pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">📜</span>
+                    <h3 id="jmaOverviewTitle" class="text-[16px] font-bold text-white">気象庁 天気概況</h3>
+                </div>
+                <span id="jmaReportTimeBadge" class="text-[14px] bg-[#2c2c2e] text-[#8e8e93] px-2.5 py-1 rounded-full font-mono">--:-- 発表</span>
+            </div>
+            <div id="jmaOverviewText" class="text-[14px] text-[#d1d1d6] leading-relaxed whitespace-pre-wrap overflow-y-auto pr-2 py-1 max-h-[55vh]">
+                気象概況を取得中...
+            </div>
+            <div class="pt-2">
+                <button type="button" onclick="toggleOverviewModal(false)" class="ios-btn w-full bg-[#2c2c2e] hover:bg-[#3a3a3c] text-white font-medium text-[14px] py-2.5 rounded-xl border border-[#3a3a3c]">
+                    閉じる
+                </button>
             </div>
         </div>
     </div>
 
-<script>
-    let currentActiveTab = 'calc';
-    let focusedInputId = 'totalLength';
-    let isOverwriteMode = true; 
-    const storageKey = 'kanamono_v12_final';
+    <!-- Settings Modal (Optional Gemini API Key) -->
+    <div id="settingsModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-[#1c1c1e] border border-[#2c2c2e] rounded-3xl p-5 w-full max-w-md shadow-2xl space-y-3.5">
+            <div class="flex items-center justify-between">
+                <h3 class="text-[16px] font-bold text-white">⚙️ API詳細設定（任意）</h3>
+                <button type="button" onclick="toggleSettingsModal(false)" class="text-[#8e8e93] hover:text-white text-lg p-1">✕</button>
+            </div>
+            <p class="text-[14px] text-[#8e8e93] leading-relaxed">
+                気象庁公式APIおよびOpen-Meteoと直接連携しているため、設定不要でそのままご利用いただけます。
+            </p>
+            <div>
+                <label for="userApiKey" class="text-[14px] text-[#8e8e93] mb-1.5 block">Gemini APIキー（設定すると将来の拡張機能が有効化）</label>
+                <input 
+                    type="password" 
+                    id="userApiKey" 
+                    placeholder="AI StudioのAPIキー（空欄でOK）"
+                    class="w-full bg-[#2c2c2e] border border-[#3a3a3c] text-white text-[14px] rounded-xl px-3 py-2 outline-none focus:border-[#0a84ff]"
+                >
+            </div>
+            <div class="flex gap-2 pt-1">
+                <button type="button" onclick="saveApiKeySettings()" class="flex-1 bg-[#0a84ff] hover:bg-[#0071e3] text-white py-2 rounded-xl text-[14px] font-semibold transition-colors">保存する</button>
+                <button type="button" onclick="toggleSettingsModal(false)" class="bg-[#2c2c2e] hover:bg-[#3a3a3c] text-[#aeaeb2] px-4 py-2 rounded-xl text-[14px] transition-colors">キャンセル</button>
+            </div>
+        </div>
+    </div>
 
-    const inputs = {
-        totalLength: '',
-        pitch: '',
-        count: ''
-    };
+    <script>
+        const STORAGE_KEY_LIST = 'weather_checker_saved_locations_list';
+        const STORAGE_KEY_ACTIVE = 'weather_checker_active_location';
+        const STORAGE_KEY_API_KEY = 'weather_checker_gemini_key';
+        const DEFAULT_LOCATIONS = ['東京都品川区', '横浜市中区', '大阪市北区'];
 
-    function switchTab(tabName) {
-        currentActiveTab = tabName;
-        document.getElementById('view-calc').classList.toggle('hidden', tabName !== 'calc');
-        document.getElementById('view-table').classList.toggle('hidden', tabName !== 'table');
-        document.getElementById('tab-calc').classList.toggle('active', tabName === 'calc');
-        document.getElementById('tab-table').classList.toggle('active', tabName === 'table');
-        
-        if (tabName === 'table') generateTable();
-        window.scrollTo(0, 0);
-    }
+        // 全国主要都市 気象庁府県予報区コード
+        const PREFECTURE_MAP = {
+            '北海道': { code: '016000', lat: 43.0642, lon: 141.3469 },
+            '札幌':   { code: '016000', lat: 43.0642, lon: 141.3469 },
+            '青森':   { code: '020000', lat: 40.8244, lon: 140.7400 },
+            '岩手':   { code: '030000', lat: 39.7036, lon: 141.1527 },
+            '盛岡':   { code: '030000', lat: 39.7036, lon: 141.1527 },
+            '宮城':   { code: '040000', lat: 38.2688, lon: 140.8721 },
+            '仙台':   { code: '040000', lat: 38.2688, lon: 140.8721 },
+            '秋田':   { code: '050000', lat: 39.7186, lon: 140.1024 },
+            '山形':   { code: '060000', lat: 38.2404, lon: 140.3633 },
+            '福島':   { code: '070000', lat: 37.7503, lon: 140.4678 },
+            '茨城':   { code: '080000', lat: 36.3418, lon: 140.4468 },
+            '水戸':   { code: '080000', lat: 36.3418, lon: 140.4468 },
+            '栃木':   { code: '090000', lat: 36.5657, lon: 139.8836 },
+            '宇都宮': { code: '090000', lat: 36.5657, lon: 139.8836 },
+            '群馬':   { code: '100000', lat: 36.3912, lon: 139.0608 },
+            '前橋':   { code: '100000', lat: 36.3912, lon: 139.0608 },
+            '埼玉':   { code: '110000', lat: 35.8569, lon: 139.6489 },
+            '千葉':   { code: '120000', lat: 35.6046, lon: 140.1233 },
+            '東京':   { code: '130000', lat: 35.6895, lon: 139.6917 },
+            '品川':   { code: '130000', lat: 35.6092, lon: 139.7302 },
+            '新宿':   { code: '130000', lat: 35.6938, lon: 139.7034 },
+            '渋谷':   { code: '130000', lat: 35.6580, lon: 139.7016 },
+            '千代田': { code: '130000', lat: 35.6940, lon: 139.7536 },
+            '神奈川': { code: '140000', lat: 35.4478, lon: 139.6425 },
+            '横浜':   { code: '140000', lat: 35.4437, lon: 139.6380 },
+            '川崎':   { code: '140000', lat: 35.5308, lon: 139.7029 },
+            '新潟':   { code: '150000', lat: 37.9026, lon: 139.0232 },
+            '富山':   { code: '160000', lat: 36.6953, lon: 137.2113 },
+            '石川':   { code: '170000', lat: 36.5947, lon: 136.6256 },
+            '金沢':   { code: '170000', lat: 36.5947, lon: 136.6256 },
+            '福井':   { code: '180000', lat: 36.0652, lon: 136.2216 },
+            '山梨':   { code: '190000', lat: 35.6639, lon: 138.5684 },
+            '甲府':   { code: '190000', lat: 35.6639, lon: 138.5684 },
+            '長野':   { code: '200000', lat: 36.6513, lon: 138.1810 },
+            '岐阜':   { code: '210000', lat: 35.3912, lon: 136.7223 },
+            '静岡':   { code: '220000', lat: 34.9770, lon: 138.3831 },
+            '愛知':   { code: '230000', lat: 35.1802, lon: 136.9066 },
+            '名古屋': { code: '230000', lat: 35.1815, lon: 136.9066 },
+            '三重':   { code: '240000', lat: 34.7303, lon: 136.5086 },
+            '津':     { code: '240000', lat: 34.7303, lon: 136.5086 },
+            '滋賀':   { code: '250000', lat: 35.0045, lon: 135.8686 },
+            '大津':   { code: '250000', lat: 35.0045, lon: 135.8686 },
+            '京都':   { code: '260000', lat: 35.0210, lon: 135.7556 },
+            '大阪':   { code: '270000', lat: 34.6863, lon: 135.5200 },
+            '梅田':   { code: '270000', lat: 34.7025, lon: 135.4959 },
+            '難波':   { code: '270000', lat: 34.6669, lon: 135.5002 },
+            '兵庫':   { code: '280000', lat: 34.6913, lon: 135.1830 },
+            '神戸':   { code: '280000', lat: 34.6901, lon: 135.1955 },
+            '奈良':   { code: '290000', lat: 34.6853, lon: 135.8327 },
+            '和歌山': { code: '300000', lat: 34.2260, lon: 135.1675 },
+            '鳥取':   { code: '310000', lat: 35.5039, lon: 134.2383 },
+            '島根':   { code: '320000', lat: 35.4723, lon: 133.0505 },
+            '松江':   { code: '320000', lat: 35.4723, lon: 133.0505 },
+            '岡山':   { code: '330000', lat: 34.6618, lon: 133.9344 },
+            '広島':   { code: '340000', lat: 34.3966, lon: 132.4596 },
+            '山口':   { code: '350000', lat: 34.1861, lon: 131.4705 },
+            '徳島':   { code: '360000', lat: 34.0657, lon: 134.5593 },
+            '香川':   { code: '370000', lat: 34.3401, lon: 134.0434 },
+            '高松':   { code: '370000', lat: 34.3401, lon: 134.0434 },
+            '愛媛':   { code: '380000', lat: 33.8417, lon: 132.7661 },
+            '松山':   { code: '380000', lat: 33.8417, lon: 132.7661 },
+            '高知':   { code: '390000', lat: 33.5597, lon: 133.5311 },
+            '福岡':   { code: '400000', lat: 33.6068, lon: 130.4182 },
+            '博多':   { code: '400000', lat: 33.5904, lon: 130.4017 },
+            '佐賀':   { code: '410000', lat: 33.2494, lon: 130.2988 },
+            '長崎':   { code: '420000', lat: 32.7448, lon: 129.8737 },
+            '熊本':   { code: '430000', lat: 32.7898, lon: 130.7417 },
+            '大分':   { code: '440000', lat: 33.2382, lon: 131.6126 },
+            '宮崎':   { code: '450000', lat: 31.9111, lon: 131.4239 },
+            '鹿児島': { code: '460100', lat: 31.5602, lon: 130.5581 },
+            '沖縄':   { code: '471000', lat: 26.2124, lon: 127.6809 },
+            '那覇':   { code: '471000', lat: 26.2124, lon: 127.6809 }
+        };
 
-    function focusInput(id) {
-        document.querySelectorAll('.calc-cell').forEach(el => el.classList.remove('focused'));
-        const displayEl = document.getElementById(`display-${id}`);
-        if (displayEl) {
-            displayEl.parentElement.classList.add('focused');
-            focusedInputId = id;
-            isOverwriteMode = true;
-        }
-    }
+        // 指定された手持ち服リスト＆体感温度による厳格な判定基準（変更完全禁止）
+        function evaluateClothingByCriteria(apparentTemp) {
+            let label = '';
+            let jacket = '';
+            let pants = '';
 
-    function pressKey(key) {
-        if (key === 'backspace') {
-            inputs[focusedInputId] = inputs[focusedInputId].toString().slice(0, -1);
-            isOverwriteMode = false;
-        } else if (key === 'clearAll') {
-            inputs.totalLength = '';
-            inputs.pitch = '';
-            inputs.count = '';
-            isOverwriteMode = true;
-        } else if (key === 'enter') {
-            handleEnter();
-            return;
-        } else {
-            if (isOverwriteMode) {
-                inputs[focusedInputId] = key;
-                isOverwriteMode = false;
+            if (apparentTemp >= 25) {
+                label = '25℃以上 (夏日・暖気)';
+                jacket = '半袖シャツ';
+                pants = 'ズボン';
+            } else if (apparentTemp >= 20) {
+                label = '20℃〜24℃ (過ごしやすい)';
+                jacket = '長袖シャツ';
+                pants = 'ズボン';
+            } else if (apparentTemp >= 16) {
+                label = '16℃〜19℃ (肌寒い・要羽織り)';
+                jacket = 'インナーシャツ ＋ 長袖シャツ ＋ ジャケット';
+                pants = 'ズボン';
+            } else if (apparentTemp >= 11) {
+                label = '11℃〜15℃ (晩秋・初春の冷え込み)';
+                jacket = '防寒インナー ＋ 長袖シャツ ＋ 軽防寒服';
+                pants = 'インナー ＋ ズボン';
+            } else if (apparentTemp >= 6) {
+                label = '6℃〜10℃ (冬の本格寒さ)';
+                jacket = '防寒インナー ＋ 長袖シャツ ＋ ジャケット ＋ 軽防寒服';
+                pants = '防寒インナー ＋ 軽防寒ズボン';
             } else {
-                if (inputs[focusedInputId] === '0') inputs[focusedInputId] = key;
-                else inputs[focusedInputId] += key;
+                label = '5℃以下 (真冬の厳しい寒さ)';
+                jacket = '防寒インナー ＋ 長袖シャツ ＋ 重防寒服（ダウン等）';
+                pants = '防寒インナー ＋ 防寒ズボン';
+            }
+
+            return { label, jacket, pants };
+        }
+
+        let locations = [];
+        let activeLocation = '東京都品川区';
+        let selectedDay = 'tomorrow'; // 'today' | 'tomorrow'
+        let cachedForecastData = null; // 今日・明日のデータを保持して即時切り替え
+
+        function setTargetDay(day) {
+            selectedDay = day;
+            updateTabStyles();
+            if (cachedForecastData && cachedForecastData[selectedDay]) {
+                renderForecastView(cachedForecastData[selectedDay]);
             }
         }
-        updateDisplay();
-        calculate();
-    }
 
-    function handleEnter() {
-        if (focusedInputId === 'pitch') focusInput('count');
-        else if (focusedInputId === 'count') focusInput('totalLength');
-        else if (focusedInputId === 'totalLength') switchTab('table');
-    }
+        function switchResultDay(day) {
+            selectedDay = day;
+            updateTabStyles();
+            if (cachedForecastData && cachedForecastData[selectedDay]) {
+                renderForecastView(cachedForecastData[selectedDay]);
+            }
+        }
 
-    function updateDisplay() {
-        for (const key in inputs) {
-            const el = document.getElementById(`display-${key}`);
-            if (el) {
-                if (inputs[key] === '') {
-                    el.innerText = '0';
-                    el.style.opacity = '0.3';
+        function updateTabStyles() {
+            const isToday = (selectedDay === 'today');
+            
+            const mToday = document.getElementById('mainTabToday');
+            const mTomorrow = document.getElementById('mainTabTomorrow');
+            const checkLabel = document.getElementById('checkBtnLabel');
+            
+            if (mToday && mTomorrow) {
+                if (isToday) {
+                    mToday.className = 'ios-btn py-1.5 text-[14px] font-semibold rounded-lg transition-all bg-[#ff9500] text-white shadow-md';
+                    mTomorrow.className = 'ios-btn py-1.5 text-[14px] font-semibold rounded-lg transition-all text-[#aeaeb2] hover:text-white';
                 } else {
-                    el.innerText = parseFloat(inputs[key]).toLocaleString('ja-JP');
-                    el.style.opacity = '1';
+                    mTomorrow.className = 'ios-btn py-1.5 text-[14px] font-semibold rounded-lg transition-all bg-[#ff9500] text-white shadow-md';
+                    mToday.className = 'ios-btn py-1.5 text-[14px] font-semibold rounded-lg transition-all text-[#aeaeb2] hover:text-white';
                 }
             }
-        }
-        saveToStorage();
-    }
 
-    function calculate() {
-        const L = parseFloat(inputs.totalLength);
-        const W = parseFloat(inputs.pitch);
-        const N = parseFloat(inputs.count);
+            const resToday = document.getElementById('resTabToday');
+            const resTomorrow = document.getElementById('resTabTomorrow');
+            if (resToday && resTomorrow) {
+                if (isToday) {
+                    resToday.className = 'ios-btn px-3 py-1 text-[14px] font-semibold rounded-lg bg-[#ff9500] text-white shadow';
+                    resTomorrow.className = 'ios-btn px-3 py-1 text-[14px] font-semibold rounded-lg text-[#aeaeb2]';
+                } else {
+                    resTomorrow.className = 'ios-btn px-3 py-1 text-[14px] font-semibold rounded-lg bg-[#ff9500] text-white shadow';
+                    resToday.className = 'ios-btn px-3 py-1 text-[14px] font-semibold rounded-lg text-[#aeaeb2]';
+                }
+            }
 
-        const resQty = document.getElementById('resQty');
-        const resQtyRem = document.getElementById('resQtyRem');
-        const resWidth = document.getElementById('resWidth');
-        const resWidthRem = document.getElementById('resWidthRem');
-
-        resQty.innerText = "-";
-        resQtyRem.innerText = "-";
-        resWidth.innerText = "-";
-        resWidthRem.innerText = "-";
-
-        if (isNaN(L)) return;
-
-        if (!isNaN(W) && W > 0) {
-            const qty = Math.floor(L / W) + 1;
-            const rem = L - (W * (qty - 1));
-            resQty.innerText = qty.toLocaleString();
-            resQtyRem.innerText = Math.round(rem).toLocaleString();
-        }
-
-        if (!isNaN(N) && N > 1) {
-            const pitchVal = Math.floor(L / (N - 1));
-            const rem = L - (pitchVal * (N - 1));
-            resWidth.innerText = pitchVal.toLocaleString();
-            resWidthRem.innerText = Math.round(rem).toLocaleString();
-        }
-    }
-
-    function generateTable() {
-        const L = parseFloat(inputs.totalLength);
-        const W = parseFloat(inputs.pitch);
-        const N = parseFloat(inputs.count);
-        const tbody = document.getElementById('detailTableBody');
-        tbody.innerHTML = '';
-
-        document.getElementById('table-badge-L').innerText = isNaN(L) ? '-' : L.toLocaleString();
-        document.getElementById('th-W').innerText = isNaN(W) ? '-' : W.toLocaleString();
-        document.getElementById('th-N').innerText = isNaN(N) ? '-' : N.toLocaleString();
-
-        const footQty = document.getElementById('foot-resQty');
-        const footWidth = document.getElementById('foot-resWidth');
-        footQty.innerText = "-";
-        footWidth.innerText = "-";
-
-        if (isNaN(L)) return;
-
-        const listQty = [];
-        const listWidth = [];
-
-        if (!isNaN(W) && W > 0) {
-            const qty = Math.floor(L / W) + 1;
-            const rem = L - (W * (qty - 1));
-            footQty.innerText = qty.toLocaleString();
-            let pos = rem / 2;
-            for (let i = 0; i < qty; i++) {
-                listQty.push(Math.round(pos));
-                pos += W;
+            if (checkLabel) {
+                checkLabel.innerText = isToday ? '今日の服装・天気を判定' : '明日の服装・天気を判定';
             }
         }
 
-        if (!isNaN(N) && N > 1) {
-            const pitchVal = Math.floor(L / (N - 1));
-            const rem = L - (pitchVal * (N - 1));
-            footWidth.innerText = pitchVal.toLocaleString();
-            let pos = rem / 2;
-            for (let i = 0; i < N; i++) {
-                listWidth.push(Math.round(pos));
-                pos += pitchVal;
+        window.addEventListener('DOMContentLoaded', () => {
+            loadLocations();
+            renderLocations();
+            updateTabStyles();
+            const savedApiKey = localStorage.getItem(STORAGE_KEY_API_KEY);
+            const keyInput = document.getElementById('userApiKey');
+            if (savedApiKey && keyInput) {
+                keyInput.value = savedApiKey;
+            }
+            // iPad起動時に初期自動判定
+            getRecommendation();
+        });
+
+        function loadLocations() {
+            const savedListJson = localStorage.getItem(STORAGE_KEY_LIST);
+            if (savedListJson) {
+                try {
+                    locations = JSON.parse(savedListJson);
+                } catch (e) {
+                    locations = [...DEFAULT_LOCATIONS];
+                }
+            } else {
+                locations = [...DEFAULT_LOCATIONS];
+                saveLocationsToStorage();
+            }
+
+            if (!Array.isArray(locations) || locations.length === 0) {
+                locations = ['東京都品川区'];
+            }
+
+            const savedActive = localStorage.getItem(STORAGE_KEY_ACTIVE);
+            if (savedActive && locations.includes(savedActive)) {
+                activeLocation = savedActive;
+            } else {
+                activeLocation = locations[0];
+                localStorage.setItem(STORAGE_KEY_ACTIVE, activeLocation);
             }
         }
 
-        const maxRows = Math.max(listQty.length, listWidth.length);
-        for (let i = 0; i < maxRows; i++) {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td class="table-cell border-r border-[#333] text-[#0a84ff]">${listQty[i] !== undefined ? listQty[i].toLocaleString() : '-'}</td>
-                <td class="table-cell text-[#30d158]">${listWidth[i] !== undefined ? listWidth[i].toLocaleString() : '-'}</td>
-            `;
-            tbody.appendChild(tr);
+        function saveLocationsToStorage() {
+            localStorage.setItem(STORAGE_KEY_LIST, JSON.stringify(locations));
+            localStorage.setItem(STORAGE_KEY_ACTIVE, activeLocation);
         }
-    }
 
-    function saveToStorage() {
-        localStorage.setItem(storageKey, JSON.stringify(inputs));
-    }
+        function renderLocations() {
+            const listEl = document.getElementById('locationList');
+            if (!listEl) return;
 
-    function loadFromStorage() {
-        const saved = localStorage.getItem(storageKey);
-        if (saved) {
-            const data = JSON.parse(saved);
-            Object.assign(inputs, data);
-            updateDisplay();
-            calculate();
+            listEl.innerHTML = '';
+            locations.forEach((loc) => {
+                const isActive = (loc === activeLocation);
+                
+                const item = document.createElement('div');
+                item.className = `flex items-center justify-between px-3 py-2 rounded-xl border transition-all ${
+                    isActive 
+                        ? 'bg-[#ff9500]/20 border-[#ff9500]/70 text-white shadow-sm' 
+                        : 'bg-[#2c2c2e]/60 border-[#3a3a3c] text-[#aeaeb2] hover:bg-[#2c2c2e]'
+                }`;
+
+                const textBtn = document.createElement('button');
+                textBtn.type = 'button';
+                textBtn.className = 'flex-1 text-left flex items-center gap-2 text-[14px] font-medium outline-none truncate';
+                textBtn.innerHTML = `
+                    <span class="${isActive ? 'text-[#ff9500]' : 'text-transparent'} text-[14px] select-none font-bold">✓</span>
+                    <span class="truncate ${isActive ? 'font-semibold text-white' : ''}">${escapeHtml(loc)}</span>
+                `;
+                textBtn.onclick = () => {
+                    selectLocation(loc);
+                    getRecommendation();
+                };
+
+                const delBtn = document.createElement('button');
+                delBtn.type = 'button';
+                delBtn.className = 'ios-btn text-[#8e8e93] hover:text-[#ff453a] active:text-[#ff453a] p-1.5 ml-2 rounded-lg text-[14px] transition-colors';
+                delBtn.setAttribute('aria-label', `${loc}を削除`);
+                delBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                `;
+                delBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    handleDeleteLocation(loc);
+                };
+
+                item.appendChild(textBtn);
+                item.appendChild(delBtn);
+                listEl.appendChild(item);
+            });
         }
-    }
 
-    let touchStartX = 0;
-    let touchStartY = 0;
-
-    document.addEventListener('touchstart', e => {
-        touchStartX = e.changedTouches[0].clientX;
-        touchStartY = e.changedTouches[0].clientY;
-    }, { passive: true });
-
-    document.addEventListener('touchend', e => {
-        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
-        const touchEndX = e.changedTouches[0].clientX;
-        const touchEndY = e.changedTouches[0].clientY;
-        const deltaX = touchStartX - touchEndX;
-        const deltaY = Math.abs(touchStartY - touchEndY);
-        if (Math.abs(deltaX) > 80 && deltaY < 100) {
-            if (deltaX > 0 && currentActiveTab === 'calc') switchTab('table');
-            else if (deltaX < 0 && currentActiveTab === 'table') switchTab('calc');
+        function escapeHtml(str) {
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         }
-    }, { passive: true });
 
-    window.onload = () => {
-        loadFromStorage();
-        focusInput('totalLength');
-    };
-</script>
+        function selectLocation(loc) {
+            activeLocation = loc;
+            saveLocationsToStorage();
+            renderLocations();
+        }
+
+        function handleAddLocation() {
+            const input = document.getElementById('locationInput');
+            const status = document.getElementById('saveStatus');
+            const val = input?.value.trim();
+
+            if (!val) return;
+
+            if (!locations.includes(val)) {
+                locations.unshift(val);
+                activeLocation = val;
+                saveLocationsToStorage();
+                renderLocations();
+
+                if (status) {
+                    status.innerText = '追加完了';
+                    status.classList.remove('opacity-0');
+                    setTimeout(() => status.classList.add('opacity-0'), 1800);
+                }
+                getRecommendation();
+            } else {
+                selectLocation(val);
+                getRecommendation();
+            }
+
+            if (input) input.value = '';
+        }
+
+        function handleDeleteLocation(locToDelete) {
+            if (locations.length <= 1) {
+                const status = document.getElementById('saveStatus');
+                if (status) {
+                    status.innerText = '最後の1件は削除不可';
+                    status.classList.remove('opacity-0');
+                    setTimeout(() => status.classList.add('opacity-0'), 2000);
+                }
+                return;
+            }
+
+            locations = locations.filter(item => item !== locToDelete);
+            if (activeLocation === locToDelete) {
+                activeLocation = locations[0];
+            }
+
+            saveLocationsToStorage();
+            renderLocations();
+        }
+
+        function toggleOverviewModal(show) {
+            const modal = document.getElementById('overviewModal');
+            if (!modal) return;
+            if (show) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function toggleSettingsModal(show) {
+            const modal = document.getElementById('settingsModal');
+            if (!modal) return;
+            if (show) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function saveApiKeySettings() {
+            const keyInput = document.getElementById('userApiKey');
+            const key = keyInput ? keyInput.value.trim() : '';
+            localStorage.setItem(STORAGE_KEY_API_KEY, key);
+            toggleSettingsModal(false);
+        }
+
+        function resolveAreaAndCoords(locationName) {
+            for (const [key, data] of Object.entries(PREFECTURE_MAP)) {
+                if (locationName.includes(key)) {
+                    return data;
+                }
+            }
+            return { code: '130000', lat: 35.6895, lon: 139.6917 };
+        }
+
+        function getTomorrowDateString() {
+            const now = new Date();
+            const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+            const y = tomorrow.getFullYear();
+            const m = String(tomorrow.getMonth() + 1).padStart(2, '0');
+            const d = String(tomorrow.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        function getTodayDateString() {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        async function getRecommendation() {
+            const btn = document.getElementById('checkBtn');
+            const loading = document.getElementById('loading');
+            const initialPlaceholder = document.getElementById('initialPlaceholder');
+            const resultContentArea = document.getElementById('resultContentArea');
+            const errorBox = document.getElementById('errorBox');
+            const resultBadge = document.getElementById('resultLocationBadge');
+            const jmaOverviewTitle = document.getElementById('jmaOverviewTitle');
+            const jmaReportTimeBadge = document.getElementById('jmaReportTimeBadge');
+            const jmaOverviewText = document.getElementById('jmaOverviewText');
+
+            const targetLocation = activeLocation || '東京都品川区';
+
+            if (resultBadge) resultBadge.innerText = targetLocation;
+
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'pointer-events-none');
+            loading.classList.remove('hidden');
+            errorBox.classList.add('hidden');
+
+            try {
+                const areaInfo = resolveAreaAndCoords(targetLocation);
+                const areaCode = areaInfo.code;
+                const coords = { lat: areaInfo.lat, lon: areaInfo.lon };
+
+                const todayStr = getTodayDateString();
+                const tomorrowStr = getTomorrowDateString();
+
+                const jmaForecastUrl = `https://www.jma.go.jp/bosai/forecast/data/forecast/${areaCode}.json`;
+                const jmaOverviewUrl = `https://www.jma.go.jp/bosai/forecast/data/overview_forecast/${areaCode}.json`;
+                const meteoUrl = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&daily=apparent_temperature_max,apparent_temperature_min,temperature_2m_max,temperature_2m_min,windspeed_10m_max,precipitation_probability_max&hourly=temperature_2m,apparent_temperature&timezone=Asia%2FTokyo&forecast_days=4`;
+
+                const [jmaForecastRes, jmaOverviewRes, meteoRes] = await Promise.all([
+                    fetch(jmaForecastUrl).catch(() => null),
+                    fetch(jmaOverviewUrl).catch(() => null),
+                    fetch(meteoUrl).catch(() => null)
+                ]);
+
+                // 気象庁概況テキストの抽出
+                let overviewReportTime = '';
+                let overviewTarget = '';
+                let overviewBody = '気象庁の概況文を更新中、または取得できませんでした。';
+
+                if (jmaOverviewRes && jmaOverviewRes.ok) {
+                    const overviewData = await jmaOverviewRes.json();
+                    if (overviewData) {
+                        overviewTarget = overviewData.targetArea || '';
+                        if (overviewData.reportDatetime) {
+                            const d = new Date(overviewData.reportDatetime);
+                            overviewReportTime = `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')} 発表`;
+                        }
+                        if (overviewData.text) {
+                            overviewBody = overviewData.text.trim();
+                        }
+                    }
+                }
+
+                if (jmaOverviewTitle) jmaOverviewTitle.innerText = `天気概況（${overviewTarget || targetLocation}）`;
+                if (jmaReportTimeBadge) jmaReportTimeBadge.innerText = overviewReportTime || '公式発表';
+                if (jmaOverviewText) jmaOverviewText.innerText = overviewBody;
+
+                let jmaData = null;
+                if (jmaForecastRes && jmaForecastRes.ok) {
+                    jmaData = await jmaForecastRes.json();
+                }
+
+                let meteoData = null;
+                if (meteoRes && meteoRes.ok) {
+                    meteoData = await meteoRes.json();
+                }
+
+                // 今日・明日のパース処理
+                const parseDayData = (dateStr, fallbackIdx, labelPrefix) => {
+                    let weatherText = '曇り時々晴れ';
+                    let windText = '北寄りの風';
+                    let maxTemp = null;
+                    let minTemp = null;
+                    let popList = [];
+                    let targetDateLabel = labelPrefix;
+                    let apparentTemp = null;
+                    let maxWindSpeed = 3.0;
+                    let morningTemp = null;
+                    let noonTemp = null;
+                    let nightTemp = null;
+
+                    if (Array.isArray(jmaData) && jmaData.length > 0) {
+                        const weatherSeries = jmaData[0]?.timeSeries?.[0];
+                        const area = weatherSeries?.areas?.[0];
+                        const timeDefines = weatherSeries?.timeDefines || [];
+
+                        let targetIdx = timeDefines.findIndex(t => t.startsWith(dateStr));
+                        if (targetIdx === -1) {
+                            targetIdx = Math.min(fallbackIdx, timeDefines.length - 1);
+                        }
+
+                        if (timeDefines[targetIdx]) {
+                            const d = new Date(timeDefines[targetIdx]);
+                            const days = ['日', '月', '火', '水', '木', '金', '土'];
+                            targetDateLabel = `${labelPrefix}【${d.getDate()}日(${days[d.getDay()]})】`;
+                        }
+
+                        if (area?.weathers?.[targetIdx]) {
+                            weatherText = area.weathers[targetIdx].replace(/\s+/g, ' ').trim();
+                        }
+                        if (area?.winds?.[targetIdx]) {
+                            windText = area.winds[targetIdx].replace(/\s+/g, ' ').trim();
+                        }
+
+                        // 降水確率
+                        const popSeries = jmaData[0]?.timeSeries?.[1];
+                        const popArea = popSeries?.areas?.[0];
+                        const popDefines = popSeries?.timeDefines || [];
+
+                        if (popArea?.pops) {
+                            popDefines.forEach((t, idx) => {
+                                if (t.startsWith(dateStr) && popArea.pops[idx] !== undefined) {
+                                    popList.push(`${popArea.pops[idx]}%`);
+                                }
+                            });
+                        }
+
+                        // 気温
+                        const tempSeries = jmaData[0]?.timeSeries?.[2];
+                        const tempArea = tempSeries?.areas?.[0];
+                        const tempDefines = tempSeries?.timeDefines || [];
+                        const tempVals = tempArea?.temps || [];
+
+                        tempDefines.forEach((t, idx) => {
+                            if (t.startsWith(dateStr) && tempVals[idx] !== undefined) {
+                                const val = parseInt(tempVals[idx], 10);
+                                if (minTemp === null || val < minTemp) minTemp = val;
+                                if (maxTemp === null || val > maxTemp) maxTemp = val;
+                            }
+                        });
+
+                        // 週間予報テーブル補完
+                        if ((minTemp === null || maxTemp === null) && jmaData[1]?.timeSeries?.[1]) {
+                            const weekArea = jmaData[1].timeSeries[1].areas?.[0];
+                            const weekDefines = jmaData[1].timeSeries[1].timeDefines || [];
+                            const weekIdx = weekDefines.findIndex(t => t.startsWith(dateStr));
+                            if (weekIdx !== -1 && weekArea) {
+                                if (weekArea.tempsMin?.[weekIdx]) minTemp = parseInt(weekArea.tempsMin[weekIdx], 10);
+                                if (weekArea.tempsMax?.[weekIdx]) maxTemp = parseInt(weekArea.tempsMax[weekIdx], 10);
+                            }
+                        }
+                    }
+
+                    // Open-Meteo補完
+                    const daily = meteoData?.daily;
+                    if (daily && Array.isArray(daily.time)) {
+                        let mIdx = daily.time.indexOf(dateStr);
+                        if (mIdx === -1) mIdx = fallbackIdx;
+
+                        if (daily.apparent_temperature_max?.[mIdx] !== undefined) {
+                            apparentTemp = Math.round(daily.apparent_temperature_max[mIdx]);
+                        }
+                        if (minTemp === null && daily.temperature_2m_min?.[mIdx] !== undefined) {
+                            minTemp = Math.round(daily.temperature_2m_min[mIdx]);
+                        }
+                        if (maxTemp === null && daily.temperature_2m_max?.[mIdx] !== undefined) {
+                            maxTemp = Math.round(daily.temperature_2m_max[mIdx]);
+                        }
+                        if (daily.windspeed_10m_max?.[mIdx] !== undefined) {
+                            maxWindSpeed = parseFloat((daily.windspeed_10m_max[mIdx] / 3.6).toFixed(1));
+                        }
+                    }
+
+                    // Open-Meteo Hourly（朝8時、昼14時、夜20時）
+                    const hourly = meteoData?.hourly;
+                    if (hourly && Array.isArray(hourly.time)) {
+                        const mMorningIdx = hourly.time.indexOf(`${dateStr}T08:00`);
+                        const mNoonIdx = hourly.time.indexOf(`${dateStr}T14:00`);
+                        const mNightIdx = hourly.time.indexOf(`${dateStr}T20:00`);
+
+                        if (mMorningIdx !== -1 && hourly.temperature_2m?.[mMorningIdx] !== undefined) {
+                            morningTemp = Math.round(hourly.temperature_2m[mMorningIdx]);
+                        }
+                        if (mNoonIdx !== -1 && hourly.temperature_2m?.[mNoonIdx] !== undefined) {
+                            noonTemp = Math.round(hourly.temperature_2m[mNoonIdx]);
+                        }
+                        if (mNightIdx !== -1 && hourly.temperature_2m?.[mNightIdx] !== undefined) {
+                            nightTemp = Math.round(hourly.temperature_2m[mNightIdx]);
+                        }
+                    }
+
+                    if (maxTemp === null) maxTemp = 20;
+                    if (minTemp === null) minTemp = 14;
+                    if (apparentTemp === null) {
+                        apparentTemp = Math.round(maxTemp - (maxWindSpeed * 0.7));
+                    }
+                    if (morningTemp === null) morningTemp = minTemp + 2;
+                    if (noonTemp === null) noonTemp = maxTemp;
+                    if (nightTemp === null) nightTemp = minTemp + 3;
+
+                    return {
+                        weatherText,
+                        windText,
+                        maxTemp,
+                        minTemp,
+                        popList,
+                        targetDateLabel,
+                        apparentTemp,
+                        maxWindSpeed,
+                        morningTemp,
+                        noonTemp,
+                        nightTemp
+                    };
+                };
+
+                cachedForecastData = {
+                    today: parseDayData(todayStr, 0, '今日'),
+                    tomorrow: parseDayData(tomorrowStr, 1, '明日')
+                };
+
+                if (initialPlaceholder) initialPlaceholder.classList.add('hidden');
+                if (resultContentArea) resultContentArea.classList.remove('hidden');
+
+                updateTabStyles();
+                renderForecastView(cachedForecastData[selectedDay]);
+
+            } catch (err) {
+                console.error("Forecast Error:", err);
+                errorBox.innerText = `データ取得中にエラーが発生しました: ${err.message}`;
+                errorBox.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'pointer-events-none');
+                loading.classList.add('hidden');
+            }
+        }
+
+        function renderForecastView(data) {
+            if (!data) return;
+
+            const forecastHeaderTitle = document.getElementById('forecastHeaderTitle');
+            const forecastApparentBadge = document.getElementById('forecastApparentBadge');
+            const emojiEl = document.getElementById('resultWeatherEmoji');
+            const forecastSec = document.getElementById('forecastSection');
+            const criteriaBadge = document.getElementById('criteriaBadge');
+            const outfitSec = document.getElementById('outfitSection');
+            const accessoryAdvice = document.getElementById('accessoryAdvice');
+            const timeTimeline = document.getElementById('timeTimeline');
+
+            const { weatherText, windText, maxTemp, minTemp, popList, targetDateLabel, apparentTemp, maxWindSpeed, morningTemp, noonTemp, nightTemp } = data;
+
+            // 天気アイコン
+            if (weatherText.includes('雨')) {
+                emojiEl.innerText = weatherText.includes('雷') ? '⛈' : '🌧';
+            } else if (weatherText.includes('雪')) {
+                emojiEl.innerText = '❄';
+            } else if (weatherText.includes('曇')) {
+                emojiEl.innerText = weatherText.includes('晴') ? '⛅' : '☁';
+            } else {
+                emojiEl.innerText = '☀️';
+            }
+
+            // 厳格な基準による服装判定
+            const outfit = evaluateClothingByCriteria(apparentTemp);
+
+            if (forecastHeaderTitle) forecastHeaderTitle.innerText = `${targetDateLabel}の予報`;
+            if (forecastApparentBadge) forecastApparentBadge.innerText = `日中体感 ${apparentTemp}℃`;
+
+            const popDisplay = popList.length > 0 ? popList.join(' / ') : '--%';
+
+            if (forecastSec) {
+                forecastSec.innerHTML = `
+                    <div class="flex justify-between py-1 border-b border-[#2c2c2e]/70">
+                        <span class="text-[#8e8e93] shrink-0">天気</span>
+                        <span class="text-white font-semibold text-right">${escapeHtml(weatherText)}</span>
+                    </div>
+                    <div class="flex justify-between py-1 border-b border-[#2c2c2e]/70">
+                        <span class="text-[#8e8e93]">風の予報</span>
+                        <span class="text-white font-medium text-right text-[14px]">${escapeHtml(windText)} (約${maxWindSpeed}m/s)</span>
+                    </div>
+                    <div class="flex justify-between py-1 border-b border-[#2c2c2e]/70">
+                        <span class="text-[#8e8e93]">気温（最低 / 最高）</span>
+                        <span class="text-white font-mono font-bold">${minTemp}℃ / ${maxTemp}℃</span>
+                    </div>
+                    <div class="flex justify-between py-1 border-b border-[#2c2c2e]/70">
+                        <span class="text-[#8e8e93]">降水確率</span>
+                        <span class="text-white font-mono font-semibold">${popDisplay}</span>
+                    </div>
+                    <div class="flex justify-between py-1">
+                        <span class="text-[#8e8e93]">体感温度計算値</span>
+                        <span class="text-orange-400 font-bold font-mono">${apparentTemp}℃</span>
+                    </div>
+                `;
+            }
+
+            if (criteriaBadge) criteriaBadge.innerText = outfit.label;
+            if (outfitSec) {
+                outfitSec.innerHTML = `
+                    <div class="bg-[#1c1c1e]/90 rounded-xl p-2.5 border border-[#ff9500]/30 shadow-sm">
+                        <div class="text-[14px] font-bold text-[#ff9500] uppercase tracking-wider mb-0.5 flex items-center gap-1">
+                            <span>👕</span>
+                            <span>【上着・トップス】</span>
+                        </div>
+                        <div class="text-white font-semibold text-[15px] leading-snug">${escapeHtml(outfit.jacket)}</div>
+                    </div>
+                    <div class="bg-[#1c1c1e]/90 rounded-xl p-2.5 border border-[#ff9500]/30 shadow-sm">
+                        <div class="text-[14px] font-bold text-[#ff9500] uppercase tracking-wider mb-0.5 flex items-center gap-1">
+                            <span>👖</span>
+                            <span>【ボトムス・ズボン】</span>
+                        </div>
+                        <div class="text-white font-semibold text-[15px] leading-snug">${escapeHtml(outfit.pants)}</div>
+                    </div>
+                `;
+            }
+
+            // 朝・昼・夜のタイムラインカード
+            if (timeTimeline) {
+                timeTimeline.innerHTML = `
+                    <div class="bg-[#2c2c2e]/70 rounded-2xl px-2 py-2.5 border border-[#3a3a3c] flex flex-col items-center justify-between min-h-[96px]">
+                        <div class="text-[#8e8e93] text-[14px] font-medium whitespace-nowrap">朝 (8時)</div>
+                        <div class="font-bold text-white font-mono text-[17px] my-1">${morningTemp}℃</div>
+                        <div class="text-[#aeaeb2] text-[14px] whitespace-nowrap tracking-tight text-center w-full px-1 py-0.5 rounded bg-[#1c1c1e]/60 border border-[#3a3a3c]/50">
+                            ${morningTemp <= 15 ? '羽織り推奨' : '快適'}
+                        </div>
+                    </div>
+                    <div class="bg-[#2c2c2e]/70 rounded-2xl px-2 py-2.5 border border-[#ff9500]/30 flex flex-col items-center justify-between min-h-[96px]">
+                        <div class="text-[#ff9500] text-[14px] font-medium whitespace-nowrap">昼 (14時)</div>
+                        <div class="font-bold text-orange-400 font-mono text-[17px] my-1">${noonTemp}℃</div>
+                        <div class="text-orange-200 text-[14px] whitespace-nowrap tracking-tight text-center w-full px-1 py-0.5 rounded bg-orange-950/40 border border-orange-500/30">
+                            ${noonTemp >= 22 ? '上着不要' : '適温'}
+                        </div>
+                    </div>
+                    <div class="bg-[#2c2c2e]/70 rounded-2xl px-2 py-2.5 border border-[#3a3a3c] flex flex-col items-center justify-between min-h-[96px]">
+                        <div class="text-[#8e8e93] text-[14px] font-medium whitespace-nowrap">夜 (20時)</div>
+                        <div class="font-bold text-[#64d2ff] font-mono text-[17px] my-1">${nightTemp}℃</div>
+                        <div class="text-[#64d2ff]/90 text-[14px] whitespace-nowrap tracking-tight text-center w-full px-1 py-0.5 rounded bg-sky-950/40 border border-sky-500/30">
+                            ${nightTemp <= 14 ? '冷え込み注意' : '過ごしやすい'}
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (accessoryAdvice) {
+                let advice = [];
+                const hasRain = weatherText.includes('雨') || popList.some(p => parseInt(p, 10) >= 30);
+                if (hasRain) {
+                    advice.push('☔ 雨の可能性があるため、折りたたみ傘やレインコートのご用意をおすすめします。');
+                }
+                if (maxTemp - minTemp >= 8) {
+                    advice.push('🧣 朝晩と日中の寒暖差が大きいため、脱ぎ着しやすい羽織りものが便利です。');
+                }
+                if (maxWindSpeed >= 6) {
+                    advice.push('💨 風がやや強めに吹く予報です。風を通しにくいアウターが適しています。');
+                }
+
+                if (advice.length === 0) {
+                    advice.push('✨ 気温・風ともに穏やかな過ごしやすい予報です。いつもの快適な装いでお出かけください。');
+                }
+
+                accessoryAdvice.innerHTML = `<div class="font-semibold text-white/90 mb-0.5 flex items-center gap-1.5"><span>💡</span><span>アドバイス & 持ち物メモ</span></div>${advice.join('<br>')}`;
+            }
+        }
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    }, err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+    </script>
 </body>
 </html>
