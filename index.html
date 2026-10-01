@@ -204,7 +204,6 @@
             <!-- Sidebar Footer -->
             <footer class="pt-2 border-t border-[#2c2c2e] text-center shrink-0">
                 <p class="text-[14px] text-[#8e8e93]">気象庁公式データ ＆ Open-Meteo連携</p>
-                <p class="text-[14px] text-[#636366] mt-0.5">iPad 11" Landscape Split View</p>
             </footer>
         </aside>
 
@@ -237,7 +236,6 @@
                                 <h2 id="forecastHeaderTitle" class="text-[17px] font-bold text-white">明日の予報</h2>
                                 <span id="resultLocationBadge" class="text-[14px] bg-[#ff9500]/15 text-[#ff9500] border border-[#ff9500]/40 px-2.5 py-0.5 rounded-full font-semibold">東京都品川区</span>
                             </div>
-                            <p class="text-[14px] text-[#8e8e93] mt-0.5">気象庁公式発表 ＆ 体感温度計算モデル</p>
                         </div>
                     </div>
 
@@ -484,6 +482,7 @@
         let activeLocation = '東京都品川区';
         let selectedDay = 'tomorrow'; // 'today' | 'tomorrow'
         let cachedForecastData = null; // 今日・明日のデータを保持して即時切り替え
+        let lastFetchedTimestamp = 0; // 最終更新時刻（ミリ秒）
 
         function setTargetDay(day) {
             selectedDay = day;
@@ -526,6 +525,29 @@
             }
             // iPad起動時に初期自動判定
             getRecommendation();
+        });
+
+        // アプリ復帰時・再開時に自動で最新予報を更新（10分以上経過、または別画面から戻った時）
+        function checkAndAutoRefresh() {
+            const now = Date.now();
+            // 前回取得から10分（600,000ミリ秒）以上経過していたら自動再取得
+            if (now - lastFetchedTimestamp >= 10 * 60 * 1000) {
+                getRecommendation();
+            }
+        }
+
+        // 画面の表示/非表示の切り替え検知（ホーム画面から戻った時やタブ切り替え時）
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                checkAndAutoRefresh();
+            }
+        });
+
+        // ページがキャッシュから復元された場合（BFCache等）の検知
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted) {
+                checkAndAutoRefresh();
+            }
         });
 
         function loadLocations() {
@@ -929,6 +951,7 @@
                     today: parseDayData(todayStr, 0, '今日'),
                     tomorrow: parseDayData(tomorrowStr, 1, '明日')
                 };
+                lastFetchedTimestamp = Date.now();
 
                 if (initialPlaceholder) initialPlaceholder.classList.add('hidden');
                 if (resultContentArea) resultContentArea.classList.remove('hidden');
@@ -982,25 +1005,25 @@
 
             if (forecastSec) {
                 forecastSec.innerHTML = `
-                    <div class="flex justify-between py-1 border-b border-[#2c2c2e]/70">
-                        <span class="text-[#8e8e93] shrink-0">天気</span>
-                        <span class="text-white font-semibold text-right">${escapeHtml(weatherText)}</span>
+                    <div class="flex justify-between py-1 border-b border-[#2c2c2e]/70 items-center">
+                        <span class="text-[#8e8e93] shrink-0 text-[14px]">天気</span>
+                        <span class="text-white font-semibold text-right text-[15px]">${escapeHtml(weatherText)}</span>
                     </div>
-                    <div class="flex justify-between py-1 border-b border-[#2c2c2e]/70">
-                        <span class="text-[#8e8e93]">風の予報</span>
-                        <span class="text-white font-medium text-right text-[14px]">${escapeHtml(windText)} (約${maxWindSpeed}m/s)</span>
+                    <div class="flex justify-between py-1 border-b border-[#2c2c2e]/70 items-center">
+                        <span class="text-[#8e8e93] text-[14px]">風の予報</span>
+                        <span class="text-white font-medium text-right text-[15px]">${escapeHtml(windText)} (約${maxWindSpeed}m/s)</span>
                     </div>
-                    <div class="flex justify-between py-1 border-b border-[#2c2c2e]/70">
-                        <span class="text-[#8e8e93]">気温（最低 / 最高）</span>
-                        <span class="text-white font-mono font-bold">${minTemp}℃ / ${maxTemp}℃</span>
+                    <div class="flex justify-between py-1 border-b border-[#2c2c2e]/70 items-center">
+                        <span class="text-[#8e8e93] text-[14px]">気温（最低 / 最高）</span>
+                        <span class="text-white font-mono font-bold text-[15px]">${minTemp}℃ / ${maxTemp}℃</span>
                     </div>
-                    <div class="flex justify-between py-1 border-b border-[#2c2c2e]/70">
-                        <span class="text-[#8e8e93]">降水確率</span>
-                        <span class="text-white font-mono font-semibold">${popDisplay}</span>
+                    <div class="flex justify-between py-1 border-b border-[#2c2c2e]/70 items-center">
+                        <span class="text-[#8e8e93] text-[14px]">降水確率</span>
+                        <span class="text-white font-mono font-semibold text-[15px]">${popDisplay}</span>
                     </div>
-                    <div class="flex justify-between py-1">
-                        <span class="text-[#8e8e93]">体感温度計算値</span>
-                        <span class="text-orange-400 font-bold font-mono">${apparentTemp}℃</span>
+                    <div class="flex justify-between py-1 items-center">
+                        <span class="text-[#8e8e93] text-[14px]">体感温度計算値</span>
+                        <span class="text-orange-400 font-bold font-mono text-[15px]">${apparentTemp}℃</span>
                     </div>
                 `;
             }
@@ -1013,39 +1036,39 @@
                             <span>👕</span>
                             <span>【上着・トップス】</span>
                         </div>
-                        <div class="text-white font-semibold text-[15px] leading-snug">${escapeHtml(outfit.jacket)}</div>
+                        <div class="text-white font-semibold text-[16px] leading-snug">${escapeHtml(outfit.jacket)}</div>
                     </div>
                     <div class="bg-[#1c1c1e]/90 rounded-xl p-2.5 border border-[#ff9500]/30 shadow-sm">
                         <div class="text-[14px] font-bold text-[#ff9500] uppercase tracking-wider mb-0.5 flex items-center gap-1">
                             <span>👖</span>
                             <span>【ボトムス・ズボン】</span>
                         </div>
-                        <div class="text-white font-semibold text-[15px] leading-snug">${escapeHtml(outfit.pants)}</div>
+                        <div class="text-white font-semibold text-[16px] leading-snug">${escapeHtml(outfit.pants)}</div>
                     </div>
                 `;
             }
 
-            // 朝・昼・夜のタイムラインカード
+            // 朝・昼・夜のタイムラインカード（気温を18px、アドバイスを15pxに拡大＆夜の気温色を明るいスカイブルーに修正）
             if (timeTimeline) {
                 timeTimeline.innerHTML = `
-                    <div class="bg-[#2c2c2e]/70 rounded-2xl px-2 py-2.5 border border-[#3a3a3c] flex flex-col items-center justify-between min-h-[96px]">
+                    <div class="bg-[#2c2c2e]/70 rounded-2xl px-2 py-2.5 border border-[#3a3a3c] flex flex-col items-center justify-between min-h-[98px]">
                         <div class="text-[#8e8e93] text-[14px] font-medium whitespace-nowrap">朝 (8時)</div>
-                        <div class="font-bold text-white font-mono text-[17px] my-1">${morningTemp}℃</div>
-                        <div class="text-[#aeaeb2] text-[14px] whitespace-nowrap tracking-tight text-center w-full px-1 py-0.5 rounded bg-[#1c1c1e]/60 border border-[#3a3a3c]/50">
+                        <div class="font-bold text-white font-mono text-[18px] my-1">${morningTemp}℃</div>
+                        <div class="text-[#aeaeb2] text-[15px] whitespace-nowrap tracking-tight text-center w-full px-1 py-0.5 rounded bg-[#1c1c1e]/60 border border-[#3a3a3c]/50">
                             ${morningTemp <= 15 ? '羽織り推奨' : '快適'}
                         </div>
                     </div>
-                    <div class="bg-[#2c2c2e]/70 rounded-2xl px-2 py-2.5 border border-[#ff9500]/30 flex flex-col items-center justify-between min-h-[96px]">
+                    <div class="bg-[#2c2c2e]/70 rounded-2xl px-2 py-2.5 border border-[#ff9500]/30 flex flex-col items-center justify-between min-h-[98px]">
                         <div class="text-[#ff9500] text-[14px] font-medium whitespace-nowrap">昼 (14時)</div>
-                        <div class="font-bold text-orange-400 font-mono text-[17px] my-1">${noonTemp}℃</div>
-                        <div class="text-orange-200 text-[14px] whitespace-nowrap tracking-tight text-center w-full px-1 py-0.5 rounded bg-orange-950/40 border border-orange-500/30">
+                        <div class="font-bold text-orange-400 font-mono text-[18px] my-1">${noonTemp}℃</div>
+                        <div class="text-orange-200 text-[15px] whitespace-nowrap tracking-tight text-center w-full px-1 py-0.5 rounded bg-orange-950/40 border border-orange-500/30">
                             ${noonTemp >= 22 ? '上着不要' : '適温'}
                         </div>
                     </div>
-                    <div class="bg-[#2c2c2e]/70 rounded-2xl px-2 py-2.5 border border-[#3a3a3c] flex flex-col items-center justify-between min-h-[96px]">
+                    <div class="bg-[#2c2c2e]/70 rounded-2xl px-2 py-2.5 border border-[#3a3a3c] flex flex-col items-center justify-between min-h-[98px]">
                         <div class="text-[#8e8e93] text-[14px] font-medium whitespace-nowrap">夜 (20時)</div>
-                        <div class="font-bold text-[#64d2ff] font-mono text-[17px] my-1">${nightTemp}℃</div>
-                        <div class="text-[#64d2ff]/90 text-[14px] whitespace-nowrap tracking-tight text-center w-full px-1 py-0.5 rounded bg-sky-950/40 border border-sky-500/30">
+                        <div class="font-bold text-[#64d2ff] font-mono text-[18px] my-1">${nightTemp}℃</div>
+                        <div class="text-[#64d2ff]/90 text-[15px] whitespace-nowrap tracking-tight text-center w-full px-1 py-0.5 rounded bg-sky-950/40 border border-sky-500/30">
                             ${nightTemp <= 14 ? '冷え込み注意' : '過ごしやすい'}
                         </div>
                     </div>
