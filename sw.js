@@ -1,4 +1,4 @@
-const CACHE_NAME = 'weather-clothes-cache-v15';
+const CACHE_NAME = 'weather-clothes-cache-v17';
 const urlsToCache = [
   './',
   './index.html',
@@ -9,7 +9,7 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', event => {
-  self.skipWaiting();
+  self.skipWaiting(); // 新しいワーカーを即座にアクティブにする
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -24,7 +24,7 @@ self.addEventListener('activate', event => {
       return Promise.all(
         cacheNames.map(cache => {
           if (cache !== CACHE_NAME) {
-            return caches.delete(cache);
+            return caches.delete(cache); // 古いキャッシュを削除
           }
         })
       );
