@@ -247,36 +247,36 @@
                     </div>
                 </div>
 
-                <!-- スクロール可能なダッシュボードコンテンツ（行間を適度に詰めたコンパクト設計） -->
+                <!-- スクロール可能なダッシュボードコンテンツ -->
                 <div class="flex-1 overflow-y-auto pr-1 space-y-2">
                     
                     <!-- 2カラム：気象詳細 ＆ 推奨服装 -->
                     <div class="grid grid-cols-2 gap-2.5">
                         <!-- 気象予報詳細カード -->
-                        <div class="bg-[#1c1c1e] rounded-2xl p-2.5 border border-[#2c2c2e] shadow-lg flex flex-col justify-between">
-                            <div class="flex items-center justify-between border-b border-[#2c2c2e] pb-1 mb-1">
-                                <h3 class="text-[14px] font-bold text-white flex items-center gap-1.5">
+                        <div class="bg-[#1c1c1e] rounded-2xl p-3 border border-[#2c2c2e] shadow-lg flex flex-col justify-between">
+                            <div class="flex items-center justify-between border-b border-[#2c2c2e] pb-1.5 mb-1.5">
+                                <h3 class="text-[15px] font-bold text-white flex items-center gap-1.5">
                                     <span>📊</span>
                                     <span>気象庁 天気・気温詳細</span>
                                 </h3>
                                 <span class="text-[14px] text-[#8e8e93]">公式データ</span>
                             </div>
-                            <div id="forecastSection" class="text-[14px] font-medium text-[#d1d1d6] leading-tight space-y-0.5">
+                            <div id="forecastSection" class="text-[15px] font-medium text-[#d1d1d6] leading-tight space-y-1">
                                 <!-- JS動的生成 -->
                             </div>
                         </div>
 
                         <!-- 推奨服装カード（厳格基準） -->
-                        <div class="bg-gradient-to-br from-[#ff9500]/15 to-[#ff5e3a]/10 rounded-2xl p-2.5 border border-[#ff9500]/40 shadow-xl flex flex-col justify-between">
-                            <div class="flex items-center justify-between border-b border-[#ff9500]/30 pb-1 mb-1">
+                        <div class="bg-gradient-to-br from-[#ff9500]/15 to-[#ff5e3a]/10 rounded-2xl p-3 border border-[#ff9500]/40 shadow-xl flex flex-col justify-between">
+                            <div class="flex items-center justify-between border-b border-[#ff9500]/30 pb-1.5 mb-1.5">
                                 <div class="flex items-center gap-1.5">
-                                    <span class="text-base">👔</span>
-                                    <h3 class="text-[15px] font-bold text-[#ff9500]">推奨服装</h3>
+                                    <span class="text-lg">👔</span>
+                                    <h3 class="text-[16px] font-bold text-[#ff9500]">推奨服装</h3>
                                 </div>
-                                <span id="criteriaBadge" class="text-[14px] bg-[#1c1c1e]/90 text-white/90 px-2 py-0.5 rounded-lg border border-[#ff9500]/30 font-semibold">--</span>
+                                <span id="criteriaBadge" class="text-[15px] bg-[#1c1c1e]/90 text-white/90 px-2 py-0.5 rounded-lg border border-[#ff9500]/30 font-semibold">--</span>
                             </div>
                             
-                            <div id="outfitSection" class="space-y-1.5">
+                            <div id="outfitSection" class="space-y-2">
                                 <!-- JS動的生成 -->
                             </div>
                         </div>
@@ -316,11 +316,6 @@
             <!-- エラー表示カード -->
             <div id="errorBox" class="hidden absolute inset-x-6 top-6 bg-[#2c1517] border border-[#ff453a]/40 rounded-2xl p-4 text-[14px] text-[#ff453a] leading-relaxed z-30 shadow-2xl"></div>
 
-            <!-- 右画面最下部クレジット -->
-            <footer class="pt-1 pb-0.5 text-center shrink-0 border-t border-[#2c2c2e]/60 mt-0.5">
-                <p class="text-[14px] text-[#636366] font-medium tracking-wider leading-none">KYOWA ROOF</p>
-            </footer>
-
         </main>
     </div>
 
@@ -349,7 +344,7 @@
     <div id="settingsModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
         <div class="bg-[#1c1c1e] border border-[#2c2c2e] rounded-3xl p-5 w-full max-w-md shadow-2xl space-y-3.5">
             <div class="flex items-center justify-between">
-                <h3 class="text-[16px] font-bold text-white">⚙️ API詳細設定（任意）</h3>
+                <h3 class="text-[16px] font-bold text-white">⚙ API詳細設定（任意）</h3>
                 <button type="button" onclick="toggleSettingsModal(false)" class="text-[#8e8e93] hover:text-white text-lg p-1">✕</button>
             </div>
             <p class="text-[14px] text-[#8e8e93] leading-relaxed">
@@ -798,7 +793,6 @@
             }
         }
 
-        // 気象庁の風テキストから風速(m/s)を推定・算出
         function estimateWindSpeedFromJmaText(windText) {
             if (!windText) return 3;
             if (windText.includes('猛烈') || windText.includes('暴風')) return 18;
@@ -1155,32 +1149,32 @@
 
             if (forecastSec) {
                 forecastSec.innerHTML = `
-                    <div class="flex justify-between py-0.5 border-b border-[#2c2c2e]/70 items-center">
-                        <span class="text-[#8e8e93] shrink-0 text-[14px]">天気</span>
-                        <span class="text-white font-semibold text-right text-[15px]">${escapeHtml(weatherText)}</span>
+                    <div class="flex justify-between py-1 border-b border-[#2c2c2e]/70 items-center">
+                        <span class="text-[#8e8e93] shrink-0 text-[15px]">天気</span>
+                        <span class="text-white font-semibold text-right text-[16px]">${escapeHtml(weatherText)}</span>
                     </div>
-                    <div class="flex justify-between py-0.5 border-b border-[#2c2c2e]/70 items-center">
-                        <span class="text-[#8e8e93] text-[14px]">風速（風の強さ）</span>
-                        <span class="text-cyan-300 font-mono font-bold text-[15px] flex items-center gap-1.5">
+                    <div class="flex justify-between py-1 border-b border-[#2c2c2e]/70 items-center">
+                        <span class="text-[#8e8e93] text-[15px]">風速（風の強さ）</span>
+                        <span class="text-cyan-300 font-mono font-bold text-[16px] flex items-center gap-1.5">
                             <span>💨 約 ${maxWindSpeed} m/s</span>
-                            <span class="text-[12px] font-medium text-[#aeaeb2] bg-[#2c2c2e] px-1.5 py-0.5 rounded border border-[#3a3a3c]">${windDesc}</span>
+                            <span class="text-[13px] font-medium text-[#aeaeb2] bg-[#2c2c2e] px-1.5 py-0.5 rounded border border-[#3a3a3c]">${windDesc}</span>
                         </span>
                     </div>
-                    <div class="flex justify-between py-0.5 border-b border-[#2c2c2e]/70 items-center">
-                        <span class="text-[#8e8e93] text-[14px]">風の予報</span>
-                        <span class="text-white font-medium text-right text-[14px] max-w-[200px] truncate" title="${escapeHtml(windText)}">${escapeHtml(windText)}</span>
+                    <div class="flex justify-between py-1 border-b border-[#2c2c2e]/70 items-center">
+                        <span class="text-[#8e8e93] text-[15px]">風の予報</span>
+                        <span class="text-white font-medium text-right text-[15px] max-w-[210px] truncate" title="${escapeHtml(windText)}">${escapeHtml(windText)}</span>
                     </div>
-                    <div class="flex justify-between py-0.5 border-b border-[#2c2c2e]/70 items-center">
-                        <span class="text-[#8e8e93] text-[14px]">気温（最低 / 最高）</span>
-                        <span class="text-white font-mono font-bold text-[15px]">${minTemp}℃ / ${maxTemp}℃</span>
+                    <div class="flex justify-between py-1 border-b border-[#2c2c2e]/70 items-center">
+                        <span class="text-[#8e8e93] text-[15px]">気温（最低 / 最高）</span>
+                        <span class="text-white font-mono font-bold text-[16px]">${minTemp}℃ / ${maxTemp}℃</span>
                     </div>
-                    <div class="flex justify-between py-0.5 border-b border-[#2c2c2e]/70 items-center">
-                        <span class="text-[#8e8e93] text-[14px]">降水確率（気象庁発表）</span>
-                        <span class="text-white font-mono font-semibold text-[15px]">${popDisplay}</span>
+                    <div class="flex justify-between py-1 border-b border-[#2c2c2e]/70 items-center">
+                        <span class="text-[#8e8e93] text-[15px]">降水確率（気象庁発表）</span>
+                        <span class="text-white font-mono font-semibold text-[16px]">${popDisplay}</span>
                     </div>
-                    <div class="flex justify-between py-0.5 items-center">
-                        <span class="text-[#8e8e93] text-[14px]">公式体感温度判定</span>
-                        <span class="text-orange-400 font-bold font-mono text-[15px]">${apparentTemp}℃</span>
+                    <div class="flex justify-between py-1 items-center">
+                        <span class="text-[#8e8e93] text-[15px]">公式体感温度判定</span>
+                        <span class="text-orange-400 font-bold font-mono text-[16px]">${apparentTemp}℃</span>
                     </div>
                 `;
             }
@@ -1188,19 +1182,19 @@
             if (criteriaBadge) criteriaBadge.innerText = outfit.label;
             if (outfitSec) {
                 outfitSec.innerHTML = `
-                    <div class="bg-[#1c1c1e]/90 rounded-xl px-2.5 py-1.5 border border-[#ff9500]/30 shadow-sm">
-                        <div class="text-[14px] font-bold text-[#ff9500] uppercase tracking-wider mb-0.5 flex items-center gap-1">
+                    <div class="bg-[#1c1c1e]/90 rounded-xl px-3 py-2 border border-[#ff9500]/30 shadow-sm">
+                        <div class="text-[15px] font-bold text-[#ff9500] uppercase tracking-wider mb-0.5 flex items-center gap-1">
                             <span>👕</span>
                             <span>【上着・トップス】</span>
                         </div>
-                        <div class="text-white font-semibold text-[16px] leading-tight">${escapeHtml(outfit.jacket)}</div>
+                        <div class="text-white font-semibold text-[17px] leading-tight">${escapeHtml(outfit.jacket)}</div>
                     </div>
-                    <div class="bg-[#1c1c1e]/90 rounded-xl px-2.5 py-1.5 border border-[#ff9500]/30 shadow-sm">
-                        <div class="text-[14px] font-bold text-[#ff9500] uppercase tracking-wider mb-0.5 flex items-center gap-1">
+                    <div class="bg-[#1c1c1e]/90 rounded-xl px-3 py-2 border border-[#ff9500]/30 shadow-sm">
+                        <div class="text-[15px] font-bold text-[#ff9500] uppercase tracking-wider mb-0.5 flex items-center gap-1">
                             <span>👖</span>
                             <span>【ボトムス・ズボン】</span>
                         </div>
-                        <div class="text-white font-semibold text-[16px] leading-tight">${escapeHtml(outfit.pants)}</div>
+                        <div class="text-white font-semibold text-[17px] leading-tight">${escapeHtml(outfit.pants)}</div>
                     </div>
                 `;
             }
