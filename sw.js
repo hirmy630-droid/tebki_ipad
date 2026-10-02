@@ -1,4 +1,4 @@
-const CACHE_NAME = 'weather-clothes-cache-v24'; // バージョンを更新してキャッシュをクリア
+const CACHE_NAME = 'weather-clothes-cache-v25'; // バージョンを更新してキャッシュをクリア
 const urlsToCache = [
   './',
   './index.html',
