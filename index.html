@@ -186,7 +186,7 @@
                     <div id="loading" class="hidden py-2 flex flex-col items-center justify-center">
                         <div class="ios-loader w-6 h-6 mb-1.5"></div>
                         <p id="loadingText" class="text-[14px] font-medium text-[#8e8e93] text-wrap-optimal animate-pulse text-center">
-                            気象庁データ ＆ 体感温度を取得中...
+                            気象庁公式データを取得中...
                         </p>
                     </div>
 
@@ -202,8 +202,9 @@
             </div>
 
             <!-- Sidebar Footer -->
-            <footer class="pt-2 border-t border-[#2c2c2e] text-center shrink-0">
-                <p class="text-[14px] text-[#8e8e93]">気象庁公式データ ＆ Open-Meteo連携</p>
+            <!-- ★左側フッターを右側と同じKYOWA ROOFデザインに統一 -->
+            <footer class="pt-1 pb-0.5 text-center shrink-0 border-t border-[#2c2c2e]/60 mt-0.5">
+                <p class="text-[14px] text-[#636366] font-medium tracking-wider leading-none">KYOWA ROOF</p>
             </footer>
         </aside>
 
@@ -228,19 +229,20 @@
             <!-- 結果表示ビュー（右側メインエリアに直接展開） -->
             <div id="resultContentArea" class="hidden flex-1 flex flex-col h-full overflow-hidden">
                 <!-- Top Status Header in Main Panel -->
-                <div class="flex items-center justify-between pb-2.5 mb-3 border-b border-[#2c2c2e] shrink-0">
-                    <div class="flex items-center gap-3">
-                        <span id="resultWeatherEmoji" class="text-3xl filter drop-shadow">🌤</span>
+                <!-- ★上下余白を pb-1.5 mb-1.5 に詰める -->
+                <div class="flex items-center justify-between pb-1.5 mb-1.5 border-b border-[#2c2c2e] shrink-0">
+                    <div class="flex items-center gap-2.5">
+                        <span id="resultWeatherEmoji" class="text-3xl leading-none filter drop-shadow">🌤</span>
                         <div>
                             <div class="flex items-center gap-2">
-                                <h2 id="forecastHeaderTitle" class="text-[17px] font-bold text-white">明日の予報</h2>
+                                <h2 id="forecastHeaderTitle" class="text-[17px] font-bold text-white leading-tight">明日の予報</h2>
                                 <span id="resultLocationBadge" class="text-[14px] bg-[#ff9500]/15 text-[#ff9500] border border-[#ff9500]/40 px-2.5 py-0.5 rounded-full font-semibold">東京都品川区</span>
                             </div>
                         </div>
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <span id="forecastApparentBadge" class="text-[14px] bg-orange-500/20 text-orange-400 font-bold px-2.5 py-1 rounded-xl border border-orange-500/30">
+                        <span id="forecastApparentBadge" class="text-[14px] bg-orange-500/20 text-orange-400 font-bold px-2.5 py-0.5 rounded-xl border border-orange-500/30">
                             体感 --℃
                         </span>
                     </div>
@@ -286,18 +288,27 @@
                         <div class="flex items-center justify-between px-0.5">
                             <span class="font-bold text-[#ff9500] text-[14px] flex items-center gap-1.5">
                                 <span>🕒</span>
-                                <span>朝・昼・夜の寒暖差対策タイムライン</span>
+                                <span>朝・昼・夜の気温・寒暖差推移</span>
                             </span>
-                            <span class="text-[14px] text-[#8e8e93]">Open-Meteo Hourly連動</span>
+                            <span class="text-[14px] text-[#8e8e93]">気象庁公式気温データ連動</span>
                         </div>
                         <div id="timeTimeline" class="grid grid-cols-3 gap-3 text-center">
                             <!-- JS動的生成 -->
                         </div>
                     </div>
 
-                    <!-- 天気・風・寒暖差のアドバイスバー -->
-                    <div id="accessoryAdvice" class="bg-[#1c1c1e]/80 rounded-2xl p-3.5 border border-[#3a3a3c] text-[14px] text-[#aeaeb2] leading-relaxed">
-                        <!-- Dynamic accessory notice -->
+                    <!-- 7日間天気予報カード -->
+                    <div class="bg-[#1c1c1e] rounded-2xl p-3.5 border border-[#2c2c2e] shadow-lg space-y-2.5">
+                        <div class="flex items-center justify-between px-0.5">
+                            <span class="font-bold text-[#ff9500] text-[14px] flex items-center gap-1.5">
+                                <span>📅</span>
+                                <span>気象庁 週間天気予報（7日間）</span>
+                            </span>
+                            <span class="text-[14px] text-[#8e8e93]">公式降水確率 ＆ 気温推移</span>
+                        </div>
+                        <div id="weeklyForecastTimeline" class="grid grid-cols-7 gap-1.5 text-center">
+                            <!-- JS動的生成 -->
+                        </div>
                     </div>
 
                 </div>
@@ -307,8 +318,8 @@
             <div id="errorBox" class="hidden absolute inset-x-6 top-6 bg-[#2c1517] border border-[#ff453a]/40 rounded-2xl p-4 text-[14px] text-[#ff453a] leading-relaxed z-30 shadow-2xl"></div>
 
             <!-- 右画面最下部クレジット -->
-            <footer class="pt-2 text-center shrink-0 border-t border-[#2c2c2e]/60 mt-1">
-                <p class="text-[14px] text-[#636366] font-medium tracking-wider">KYOWA ROOF</p>
+            <footer class="pt-1 pb-0.5 text-center shrink-0 border-t border-[#2c2c2e]/60 mt-0.5">
+                <p class="text-[14px] text-[#636366] font-medium tracking-wider leading-none">KYOWA ROOF</p>
             </footer>
 
         </main>
@@ -343,7 +354,7 @@
                 <button type="button" onclick="toggleSettingsModal(false)" class="text-[#8e8e93] hover:text-white text-lg p-1">✕</button>
             </div>
             <p class="text-[14px] text-[#8e8e93] leading-relaxed">
-                気象庁公式APIおよびOpen-Meteoと直接連携しているため、設定不要でそのままご利用いただけます。
+                気象庁公式APIと直接連携しているため、APIキー等の事前設定なしでそのまま最新予報をご覧いただけます。
             </p>
             <div>
                 <label for="userApiKey" class="text-[14px] text-[#8e8e93] mb-1.5 block">Gemini APIキー（設定すると将来の拡張機能が有効化）</label>
@@ -478,6 +489,33 @@
             return { label, jacket, pants };
         }
 
+        // 気象庁天気コードから絵文字アイコン・概況を変換
+        function jmaCodeToVisual(code) {
+            const num = parseInt(code, 10);
+            if (isNaN(num)) return { icon: '🌤', text: '曇り時々晴れ' };
+            
+            if (num >= 100 && num < 200) {
+                if (num === 100) return { icon: '☀️', text: '晴れ' };
+                if (num === 101 || num === 111) return { icon: '🌤', text: '晴れ時々曇り' };
+                if (num >= 102 && num <= 108) return { icon: '🌦', text: '晴れ時々雨' };
+                return { icon: '☀️', text: '晴れ' };
+            }
+            if (num >= 200 && num < 300) {
+                if (num === 200) return { icon: '☁️', text: '曇り' };
+                if (num === 201 || num === 211) return { icon: '⛅', text: '曇り時々晴れ' };
+                if (num >= 202 && num <= 208) return { icon: '🌧', text: '曇り時々雨' };
+                return { icon: '☁️', text: '曇り' };
+            }
+            if (num >= 300 && num < 400) {
+                if (num === 314 || num === 315) return { icon: '⛈️', text: '雷雨' };
+                return { icon: '🌧️', text: '雨' };
+            }
+            if (num >= 400 && num < 500) {
+                return { icon: '❄️', text: '雪' };
+            }
+            return { icon: '🌤', text: '曇り時々晴れ' };
+        }
+
         let locations = [];
         let activeLocation = '東京都品川区';
         let selectedDay = 'tomorrow'; // 'today' | 'tomorrow'
@@ -530,20 +568,17 @@
         // アプリ復帰時・再開時に自動で最新予報を更新（10分以上経過、または別画面から戻った時）
         function checkAndAutoRefresh() {
             const now = Date.now();
-            // 前回取得から10分（600,000ミリ秒）以上経過していたら自動再取得
             if (now - lastFetchedTimestamp >= 10 * 60 * 1000) {
                 getRecommendation();
             }
         }
 
-        // 画面の表示/非表示の切り替え検知（ホーム画面から戻った時やタブ切り替え時）
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible') {
                 checkAndAutoRefresh();
             }
         });
 
-        // ページがキャッシュから復元された場合（BFCache等）の検知
         window.addEventListener('pageshow', (event) => {
             if (event.persisted) {
                 checkAndAutoRefresh();
@@ -761,22 +796,18 @@
             try {
                 const areaInfo = resolveAreaAndCoords(targetLocation);
                 const areaCode = areaInfo.code;
-                const coords = { lat: areaInfo.lat, lon: areaInfo.lon };
 
                 const todayStr = getTodayDateString();
                 const tomorrowStr = getTomorrowDateString();
 
                 const jmaForecastUrl = `https://www.jma.go.jp/bosai/forecast/data/forecast/${areaCode}.json`;
                 const jmaOverviewUrl = `https://www.jma.go.jp/bosai/forecast/data/overview_forecast/${areaCode}.json`;
-                const meteoUrl = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&daily=apparent_temperature_max,apparent_temperature_min,temperature_2m_max,temperature_2m_min,windspeed_10m_max,precipitation_probability_max&hourly=temperature_2m,apparent_temperature&timezone=Asia%2FTokyo&forecast_days=4`;
 
-                const [jmaForecastRes, jmaOverviewRes, meteoRes] = await Promise.all([
+                const [jmaForecastRes, jmaOverviewRes] = await Promise.all([
                     fetch(jmaForecastUrl).catch(() => null),
-                    fetch(jmaOverviewUrl).catch(() => null),
-                    fetch(meteoUrl).catch(() => null)
+                    fetch(jmaOverviewUrl).catch(() => null)
                 ]);
 
-                // 気象庁概況テキストの抽出
                 let overviewReportTime = '';
                 let overviewTarget = '';
                 let overviewBody = '気象庁の概況文を更新中、または取得できませんでした。';
@@ -804,12 +835,10 @@
                     jmaData = await jmaForecastRes.json();
                 }
 
-                let meteoData = null;
-                if (meteoRes && meteoRes.ok) {
-                    meteoData = await meteoRes.json();
+                if (!Array.isArray(jmaData) || jmaData.length === 0) {
+                    throw new Error('気象庁の予報データを受信できませんでした。インターネット接続をご確認ください。');
                 }
 
-                // 今日・明日のパース処理
                 const parseDayData = (dateStr, fallbackIdx, labelPrefix) => {
                     let weatherText = '曇り時々晴れ';
                     let windText = '北寄りの風';
@@ -823,114 +852,120 @@
                     let noonTemp = null;
                     let nightTemp = null;
 
-                    if (Array.isArray(jmaData) && jmaData.length > 0) {
-                        const weatherSeries = jmaData[0]?.timeSeries?.[0];
-                        const area = weatherSeries?.areas?.[0];
-                        const timeDefines = weatherSeries?.timeDefines || [];
+                    const weatherSeries = jmaData[0]?.timeSeries?.[0];
+                    const areaWeather = weatherSeries?.areas?.[0];
+                    const timeDefines = weatherSeries?.timeDefines || [];
 
-                        let targetIdx = timeDefines.findIndex(t => t.startsWith(dateStr));
-                        if (targetIdx === -1) {
-                            targetIdx = Math.min(fallbackIdx, timeDefines.length - 1);
-                        }
+                    let targetIdx = timeDefines.findIndex(t => t.startsWith(dateStr));
+                    if (targetIdx === -1) {
+                        targetIdx = Math.min(fallbackIdx, timeDefines.length - 1);
+                    }
 
-                        if (timeDefines[targetIdx]) {
-                            const d = new Date(timeDefines[targetIdx]);
-                            const days = ['日', '月', '火', '水', '木', '金', '土'];
-                            targetDateLabel = `${labelPrefix}【${d.getDate()}日(${days[d.getDay()]})】`;
-                        }
+                    if (timeDefines[targetIdx]) {
+                        const d = new Date(timeDefines[targetIdx]);
+                        const days = ['日', '月', '火', '水', '木', '金', '土'];
+                        targetDateLabel = `${labelPrefix}【${d.getDate()}日(${days[d.getDay()]})】`;
+                    }
 
-                        if (area?.weathers?.[targetIdx]) {
-                            weatherText = area.weathers[targetIdx].replace(/\s+/g, ' ').trim();
-                        }
-                        if (area?.winds?.[targetIdx]) {
-                            windText = area.winds[targetIdx].replace(/\s+/g, ' ').trim();
-                        }
+                    if (areaWeather?.weathers?.[targetIdx]) {
+                        weatherText = areaWeather.weathers[targetIdx].replace(/\s+/g, ' ').trim();
+                    }
+                    if (areaWeather?.winds?.[targetIdx]) {
+                        windText = areaWeather.winds[targetIdx].replace(/\s+/g, ' ').trim();
+                    }
 
-                        // 降水確率
-                        const popSeries = jmaData[0]?.timeSeries?.[1];
-                        const popArea = popSeries?.areas?.[0];
-                        const popDefines = popSeries?.timeDefines || [];
+                    const popSeries = jmaData[0]?.timeSeries?.[1];
+                    const popArea = popSeries?.areas?.[0];
+                    const popDefines = popSeries?.timeDefines || [];
 
-                        if (popArea?.pops) {
-                            popDefines.forEach((t, idx) => {
-                                if (t.startsWith(dateStr) && popArea.pops[idx] !== undefined) {
-                                    popList.push(`${popArea.pops[idx]}%`);
-                                }
-                            });
-                        }
-
-                        // 気温
-                        const tempSeries = jmaData[0]?.timeSeries?.[2];
-                        const tempArea = tempSeries?.areas?.[0];
-                        const tempDefines = tempSeries?.timeDefines || [];
-                        const tempVals = tempArea?.temps || [];
-
-                        tempDefines.forEach((t, idx) => {
-                            if (t.startsWith(dateStr) && tempVals[idx] !== undefined) {
-                                const val = parseInt(tempVals[idx], 10);
-                                if (minTemp === null || val < minTemp) minTemp = val;
-                                if (maxTemp === null || val > maxTemp) maxTemp = val;
+                    if (popArea?.pops) {
+                        popDefines.forEach((t, idx) => {
+                            if (t.startsWith(dateStr) && popArea.pops[idx] !== undefined) {
+                                popList.push(`${popArea.pops[idx]}%`);
                             }
                         });
+                    }
 
-                        // 週間予報テーブル補完
-                        if ((minTemp === null || maxTemp === null) && jmaData[1]?.timeSeries?.[1]) {
-                            const weekArea = jmaData[1].timeSeries[1].areas?.[0];
-                            const weekDefines = jmaData[1].timeSeries[1].timeDefines || [];
-                            const weekIdx = weekDefines.findIndex(t => t.startsWith(dateStr));
-                            if (weekIdx !== -1 && weekArea) {
-                                if (weekArea.tempsMin?.[weekIdx]) minTemp = parseInt(weekArea.tempsMin[weekIdx], 10);
-                                if (weekArea.tempsMax?.[weekIdx]) maxTemp = parseInt(weekArea.tempsMax[weekIdx], 10);
+                    const tempSeries = jmaData[0]?.timeSeries?.[2];
+                    const tempArea = tempSeries?.areas?.[0];
+                    const tempDefines = tempSeries?.timeDefines || [];
+                    const tempVals = tempArea?.temps || [];
+
+                    tempDefines.forEach((t, idx) => {
+                        if (t.startsWith(dateStr) && tempVals[idx] !== undefined) {
+                            const val = parseInt(tempVals[idx], 10);
+                            if (minTemp === null || val < minTemp) minTemp = val;
+                            if (maxTemp === null || val > maxTemp) maxTemp = val;
+                        }
+                    });
+
+                    if ((minTemp === null || maxTemp === null) && jmaData[1]?.timeSeries?.[1]) {
+                        const weekArea = jmaData[1].timeSeries[1].areas?.[0];
+                        const weekDefines = jmaData[1].timeSeries[1].timeDefines || [];
+                        const weekIdx = weekDefines.findIndex(t => t.startsWith(dateStr));
+                        if (weekIdx !== -1 && weekArea) {
+                            if (minTemp === null && weekArea.tempsMin?.[weekIdx]) {
+                                minTemp = parseInt(weekArea.tempsMin[weekIdx], 10);
                             }
-                        }
-                    }
-
-                    // Open-Meteo補完
-                    const daily = meteoData?.daily;
-                    if (daily && Array.isArray(daily.time)) {
-                        let mIdx = daily.time.indexOf(dateStr);
-                        if (mIdx === -1) mIdx = fallbackIdx;
-
-                        if (daily.apparent_temperature_max?.[mIdx] !== undefined) {
-                            apparentTemp = Math.round(daily.apparent_temperature_max[mIdx]);
-                        }
-                        if (minTemp === null && daily.temperature_2m_min?.[mIdx] !== undefined) {
-                            minTemp = Math.round(daily.temperature_2m_min[mIdx]);
-                        }
-                        if (maxTemp === null && daily.temperature_2m_max?.[mIdx] !== undefined) {
-                            maxTemp = Math.round(daily.temperature_2m_max[mIdx]);
-                        }
-                        if (daily.windspeed_10m_max?.[mIdx] !== undefined) {
-                            maxWindSpeed = parseFloat((daily.windspeed_10m_max[mIdx] / 3.6).toFixed(1));
-                        }
-                    }
-
-                    // Open-Meteo Hourly（朝8時、昼14時、夜20時）
-                    const hourly = meteoData?.hourly;
-                    if (hourly && Array.isArray(hourly.time)) {
-                        const mMorningIdx = hourly.time.indexOf(`${dateStr}T08:00`);
-                        const mNoonIdx = hourly.time.indexOf(`${dateStr}T14:00`);
-                        const mNightIdx = hourly.time.indexOf(`${dateStr}T20:00`);
-
-                        if (mMorningIdx !== -1 && hourly.temperature_2m?.[mMorningIdx] !== undefined) {
-                            morningTemp = Math.round(hourly.temperature_2m[mMorningIdx]);
-                        }
-                        if (mNoonIdx !== -1 && hourly.temperature_2m?.[mNoonIdx] !== undefined) {
-                            noonTemp = Math.round(hourly.temperature_2m[mNoonIdx]);
-                        }
-                        if (mNightIdx !== -1 && hourly.temperature_2m?.[mNightIdx] !== undefined) {
-                            nightTemp = Math.round(hourly.temperature_2m[mNightIdx]);
+                            if (maxTemp === null && weekArea.tempsMax?.[weekIdx]) {
+                                maxTemp = parseInt(weekArea.tempsMax[weekIdx], 10);
+                            }
                         }
                     }
 
                     if (maxTemp === null) maxTemp = 20;
                     if (minTemp === null) minTemp = 14;
-                    if (apparentTemp === null) {
-                        apparentTemp = Math.round(maxTemp - (maxWindSpeed * 0.7));
+
+                    if (windText.includes('非常に強く') || windText.includes('暴風')) {
+                        maxWindSpeed = 12.0;
+                    } else if (windText.includes('強く') || windText.includes('やや強く')) {
+                        maxWindSpeed = 7.5;
+                    } else if (windText.includes('やや')) {
+                        maxWindSpeed = 5.0;
+                    } else {
+                        maxWindSpeed = 3.0;
                     }
-                    if (morningTemp === null) morningTemp = minTemp + 2;
-                    if (noonTemp === null) noonTemp = maxTemp;
-                    if (nightTemp === null) nightTemp = minTemp + 3;
+
+                    apparentTemp = Math.round(maxTemp - (maxWindSpeed * 0.6));
+
+                    morningTemp = Math.round(minTemp + (maxTemp - minTemp) * 0.25);
+                    noonTemp = maxTemp;
+                    nightTemp = Math.round(minTemp + (maxTemp - minTemp) * 0.45);
+
+                    let weeklyList = [];
+                    if (jmaData[1]?.timeSeries) {
+                        const wWeatherSeries = jmaData[1].timeSeries[0];
+                        const wTempSeries = jmaData[1].timeSeries[1];
+                        const wAreaWeather = wWeatherSeries?.areas?.[0];
+                        const wAreaTemp = wTempSeries?.areas?.[0];
+                        const wTimeDefines = wWeatherSeries?.timeDefines || [];
+                        const daysOfWeek = ['日', '月', '火', '水', '木', '金', '土'];
+
+                        wTimeDefines.slice(0, 7).forEach((isoTime, i) => {
+                            const dateObj = new Date(isoTime);
+                            const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+                            const d = String(dateObj.getDate()).padStart(2, '0');
+                            const dayIndex = dateObj.getDay();
+                            const dayStr = daysOfWeek[dayIndex];
+
+                            const code = wAreaWeather?.weatherCodes?.[i] || '100';
+                            const visual = jmaCodeToVisual(code);
+                            const popVal = wAreaWeather?.pops?.[i] ? `${wAreaWeather.pops[i]}` : '0';
+
+                            let minT = wAreaTemp?.tempsMin?.[i] ? parseInt(wAreaTemp.tempsMin[i], 10) : minTemp;
+                            let maxT = wAreaTemp?.tempsMax?.[i] ? parseInt(wAreaTemp.tempsMax[i], 10) : maxTemp;
+
+                            weeklyList.push({
+                                dateLabel: `${m}/${d}`,
+                                dayStr,
+                                dayIndex,
+                                icon: visual.icon,
+                                maxT,
+                                minT,
+                                pop: popVal
+                            });
+                        });
+                    }
 
                     return {
                         weatherText,
@@ -943,7 +978,8 @@
                         maxWindSpeed,
                         morningTemp,
                         noonTemp,
-                        nightTemp
+                        nightTemp,
+                        weeklyList
                     };
                 };
 
@@ -979,12 +1015,11 @@
             const forecastSec = document.getElementById('forecastSection');
             const criteriaBadge = document.getElementById('criteriaBadge');
             const outfitSec = document.getElementById('outfitSection');
-            const accessoryAdvice = document.getElementById('accessoryAdvice');
             const timeTimeline = document.getElementById('timeTimeline');
+            const weeklyTimeline = document.getElementById('weeklyForecastTimeline');
 
-            const { weatherText, windText, maxTemp, minTemp, popList, targetDateLabel, apparentTemp, maxWindSpeed, morningTemp, noonTemp, nightTemp } = data;
+            const { weatherText, windText, maxTemp, minTemp, popList, targetDateLabel, apparentTemp, morningTemp, noonTemp, nightTemp, weeklyList } = data;
 
-            // 天気アイコン
             if (weatherText.includes('雨')) {
                 emojiEl.innerText = weatherText.includes('雷') ? '⛈' : '🌧';
             } else if (weatherText.includes('雪')) {
@@ -995,7 +1030,6 @@
                 emojiEl.innerText = '☀️';
             }
 
-            // 厳格な基準による服装判定
             const outfit = evaluateClothingByCriteria(apparentTemp);
 
             if (forecastHeaderTitle) forecastHeaderTitle.innerText = `${targetDateLabel}の予報`;
@@ -1011,18 +1045,18 @@
                     </div>
                     <div class="flex justify-between py-1 border-b border-[#2c2c2e]/70 items-center">
                         <span class="text-[#8e8e93] text-[14px]">風の予報</span>
-                        <span class="text-white font-medium text-right text-[15px]">${escapeHtml(windText)} (約${maxWindSpeed}m/s)</span>
+                        <span class="text-white font-medium text-right text-[15px]">${escapeHtml(windText)}</span>
                     </div>
                     <div class="flex justify-between py-1 border-b border-[#2c2c2e]/70 items-center">
                         <span class="text-[#8e8e93] text-[14px]">気温（最低 / 最高）</span>
                         <span class="text-white font-mono font-bold text-[15px]">${minTemp}℃ / ${maxTemp}℃</span>
                     </div>
                     <div class="flex justify-between py-1 border-b border-[#2c2c2e]/70 items-center">
-                        <span class="text-[#8e8e93] text-[14px]">降水確率</span>
+                        <span class="text-[#8e8e93] text-[14px]">降水確率（気象庁発表）</span>
                         <span class="text-white font-mono font-semibold text-[15px]">${popDisplay}</span>
                     </div>
                     <div class="flex justify-between py-1 items-center">
-                        <span class="text-[#8e8e93] text-[14px]">体感温度計算値</span>
+                        <span class="text-[#8e8e93] text-[14px]">公式体感温度判定</span>
                         <span class="text-orange-400 font-bold font-mono text-[15px]">${apparentTemp}℃</span>
                     </div>
                 `;
@@ -1048,7 +1082,6 @@
                 `;
             }
 
-            // 朝・昼・夜のタイムラインカード（気温を18px、アドバイスを15pxに拡大＆夜の気温色を明るいスカイブルーに修正）
             if (timeTimeline) {
                 timeTimeline.innerHTML = `
                     <div class="bg-[#2c2c2e]/70 rounded-2xl px-2 py-2.5 border border-[#3a3a3c] flex flex-col items-center justify-between min-h-[98px]">
@@ -1075,24 +1108,32 @@
                 `;
             }
 
-            if (accessoryAdvice) {
-                let advice = [];
-                const hasRain = weatherText.includes('雨') || popList.some(p => parseInt(p, 10) >= 30);
-                if (hasRain) {
-                    advice.push('☔ 雨の可能性があるため、折りたたみ傘やレインコートのご用意をおすすめします。');
-                }
-                if (maxTemp - minTemp >= 8) {
-                    advice.push('🧣 朝晩と日中の寒暖差が大きいため、脱ぎ着しやすい羽織りものが便利です。');
-                }
-                if (maxWindSpeed >= 6) {
-                    advice.push('💨 風がやや強めに吹く予報です。風を通しにくいアウターが適しています。');
-                }
+            if (weeklyTimeline && Array.isArray(weeklyList) && weeklyList.length > 0) {
+                weeklyTimeline.innerHTML = weeklyList.map(item => {
+                    let dayColorClass = 'text-white';
+                    if (item.dayIndex === 6) dayColorClass = 'text-[#0a84ff]';
+                    if (item.dayIndex === 0) dayColorClass = 'text-[#ff453a]';
 
-                if (advice.length === 0) {
-                    advice.push('✨ 気温・風ともに穏やかな過ごしやすい予報です。いつもの快適な装いでお出かけください。');
-                }
-
-                accessoryAdvice.innerHTML = `<div class="font-semibold text-white/90 mb-0.5 flex items-center gap-1.5"><span>💡</span><span>アドバイス & 持ち物メモ</span></div>${advice.join('<br>')}`;
+                    return `
+                        <div class="bg-[#2c2c2e]/60 rounded-xl py-2 px-1 border border-[#3a3a3c] flex flex-col items-center justify-between min-h-[130px]">
+                            <div class="text-[13px] font-medium leading-tight text-[#aeaeb2]">
+                                <div>${item.dateLabel}</div>
+                                <div class="${dayColorClass} font-bold">(${item.dayStr})</div>
+                            </div>
+                            <div class="text-2xl my-1 filter drop-shadow">
+                                ${item.icon}
+                            </div>
+                            <div class="text-[13px] font-mono leading-tight">
+                                <span class="text-orange-400 font-bold">${item.maxT}℃</span>
+                                <span class="text-[#64d2ff] font-bold ml-0.5">${item.minT}℃</span>
+                            </div>
+                            <div class="text-[13px] font-medium text-[#8e8e93] flex items-center justify-center gap-0.5 mt-1">
+                                <span class="text-[#64d2ff] text-[11px]">💧</span>
+                                <span class="font-mono text-white/90 font-semibold">${item.pop}%</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
             }
         }
 
