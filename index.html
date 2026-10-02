@@ -129,7 +129,7 @@
                             id="locationInput" 
                             placeholder="市区町村・都道府県（例: 札幌、福岡）" 
                             class="flex-1 bg-[#2c2c2e]/80 border border-[#3a3a3c] focus:border-[#0a84ff] text-white text-[14px] rounded-xl px-3 py-2 outline-none transition-colors duration-150 placeholder-[#636366]"
-                            onkeydown="if(event.key === 'Enter') handleAddLocation()"
+                            onkeydown="if(event.key === 'Enter' && !event.isComposing) handleAddLocation()"
                         >
                         <button 
                             type="button" 
@@ -707,13 +707,19 @@
                 return;
             }
 
+            const wasActive = (activeLocation === locToDelete);
             locations = locations.filter(item => item !== locToDelete);
-            if (activeLocation === locToDelete) {
+            if (wasActive) {
                 activeLocation = locations[0];
             }
 
             saveLocationsToStorage();
             renderLocations();
+
+            // 選択中の地点を削除した場合は自動で新しい先頭地点の予報を再取得
+            if (wasActive) {
+                getRecommendation();
+            }
         }
 
         function toggleOverviewModal(show) {
@@ -798,11 +804,30 @@
 
                 const jmaForecastUrl = `https://www.jma.go.jp/bosai/forecast/data/forecast/${areaCode}.json`;
                 const jmaOverviewUrl = `https://www.jma.go.jp/bosai/forecast/data/overview_forecast/${areaCode}.json`;
+                const openMeteoUrl = `https://api.open-meteo.com/v1/forecast?latitude=${areaInfo.lat}&longitude=${areaInfo.lon}&daily=wind_speed_10m_max&wind_speed_unit=ms&timezone=Asia%2FTokyo`;
 
-                const [jmaForecastRes, jmaOverviewRes] = await Promise.all([
+                const [jmaForecastRes, jmaOverviewRes, openMeteoRes] = await Promise.all([
                     fetch(jmaForecastUrl).catch(() => null),
-                    fetch(jmaOverviewUrl).catch(() => null)
+                    fetch(jmaOverviewUrl).catch(() => null),
+                    fetch(openMeteoUrl).catch(() => null)
                 ]);
+
+                let dailyWindMap = {};
+                if (openMeteoRes && openMeteoRes.ok) {
+                    try {
+                        const omData = await openMeteoRes.json();
+                        if (omData?.daily?.time && omData?.daily?.wind_speed_10m_max) {
+                            omData.daily.time.forEach((dateKey, idx) => {
+                                const spd = omData.daily.wind_speed_10m_max[idx];
+                                if (spd !== undefined && spd !== null) {
+                                    dailyWindMap[dateKey] = Math.round(spd);
+                                }
+                            });
+                        }
+                    } catch (e) {
+                        console.warn("Open-Meteo wind speed parsing error:", e);
+                    }
+                }
 
                 let overviewReportTime = '';
                 let overviewTarget = '';
@@ -939,10 +964,12 @@
 
                         wTimeDefines.slice(0, 7).forEach((isoTime, i) => {
                             const dateObj = new Date(isoTime);
+                            const y = dateObj.getFullYear();
                             const m = String(dateObj.getMonth() + 1).padStart(2, '0');
                             const d = String(dateObj.getDate()).padStart(2, '0');
                             const dayIndex = dateObj.getDay();
                             const dayStr = daysOfWeek[dayIndex];
+                            const isoDateKey = `${y}-${m}-${d}`;
 
                             const code = wAreaWeather?.weatherCodes?.[i] || '100';
                             const visual = jmaCodeToVisual(code);
@@ -951,6 +978,8 @@
                             let minT = wAreaTemp?.tempsMin?.[i] ? parseInt(wAreaTemp.tempsMin[i], 10) : minTemp;
                             let maxT = wAreaTemp?.tempsMax?.[i] ? parseInt(wAreaTemp.tempsMax[i], 10) : maxTemp;
 
+                            const windSpeed = dailyWindMap[isoDateKey] !== undefined ? dailyWindMap[isoDateKey] : null;
+
                             weeklyList.push({
                                 dateLabel: `${m}/${d}`,
                                 dayStr,
@@ -958,7 +987,8 @@
                                 icon: visual.icon,
                                 maxT,
                                 minT,
-                                pop: popVal
+                                pop: popVal,
+                                windSpeed
                             });
                         });
                     }
@@ -1016,14 +1046,16 @@
 
             const { weatherText, windText, maxTemp, minTemp, popList, targetDateLabel, apparentTemp, morningTemp, noonTemp, nightTemp, weeklyList } = data;
 
-            if (weatherText.includes('雨')) {
-                emojiEl.innerText = weatherText.includes('雷') ? '⛈' : '🌧';
-            } else if (weatherText.includes('雪')) {
-                emojiEl.innerText = '❄';
-            } else if (weatherText.includes('曇')) {
-                emojiEl.innerText = weatherText.includes('晴') ? '⛅' : '☁';
-            } else {
-                emojiEl.innerText = '☀️';
+            if (emojiEl) {
+                if (weatherText.includes('雨')) {
+                    emojiEl.innerText = weatherText.includes('雷') ? '⛈' : '🌧';
+                } else if (weatherText.includes('雪')) {
+                    emojiEl.innerText = '❄';
+                } else if (weatherText.includes('曇')) {
+                    emojiEl.innerText = weatherText.includes('晴') ? '⛅' : '☁';
+                } else {
+                    emojiEl.innerText = '☀️';
+                }
             }
 
             const outfit = evaluateClothingByCriteria(apparentTemp);
@@ -1110,8 +1142,10 @@
                     if (item.dayIndex === 6) dayColorClass = 'text-[#0a84ff]';
                     if (item.dayIndex === 0) dayColorClass = 'text-[#ff453a]';
 
+                    const windDisplay = (item.windSpeed !== null && item.windSpeed !== undefined) ? `${item.windSpeed}m/s` : '--';
+
                     return `
-                        <div class="bg-[#2c2c2e]/60 rounded-xl py-1.5 px-1 border border-[#3a3a3c] flex flex-col items-center justify-between min-h-[118px]">
+                        <div class="bg-[#2c2c2e]/60 rounded-xl py-1.5 px-1 border border-[#3a3a3c] flex flex-col items-center justify-between min-h-[126px]">
                             <div class="text-[13px] font-medium leading-tight text-[#aeaeb2]">
                                 <div>${item.dateLabel}</div>
                                 <div class="${dayColorClass} font-bold">(${item.dayStr})</div>
@@ -1123,9 +1157,13 @@
                                 <span class="text-orange-400 font-bold">${item.maxT}℃</span>
                                 <span class="text-[#64d2ff] font-bold ml-0.5">${item.minT}℃</span>
                             </div>
-                            <div class="text-[13px] font-medium text-[#8e8e93] flex items-center justify-center gap-0.5 mt-0.5">
+                            <div class="text-[12px] font-medium text-[#8e8e93] flex items-center justify-center gap-0.5 mt-0.5">
                                 <span class="text-[#64d2ff] text-[11px]">💧</span>
                                 <span class="font-mono text-white/90 font-semibold">${item.pop}%</span>
+                            </div>
+                            <div class="text-[12px] font-medium text-[#8e8e93] flex items-center justify-center gap-0.5">
+                                <span class="text-[11px]">💨</span>
+                                <span class="font-mono text-white/90 font-semibold">${windDisplay}</span>
                             </div>
                         </div>
                     `;
