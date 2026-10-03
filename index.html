@@ -122,122 +122,122 @@
             <div class="max-w-[1600px] mx-auto w-full h-full grid grid-cols-1 md:grid-cols-12 gap-2 items-stretch min-h-0">
                 
                 <!-- ================= 左画面: 対象日の天気サマリー & 推奨服装 & 地点登録 (5カラム) ================= -->
-                <div class="md:col-span-5 flex flex-col justify-between gap-1.5 h-full overflow-hidden min-h-0">
+                <div class="md:col-span-5 flex flex-col justify-between gap-2 h-full overflow-hidden min-h-0">
                     
-                    <!-- ① 天気サマリーカード（Mac Chromeでも下部が見切れないよう上下パディングを最適化） -->
-                    <div class="bg-white rounded-xl pt-1.5 px-3 pb-1 border border-[#e5e5ea] shadow-xs flex-1 flex flex-col justify-between overflow-hidden min-h-0">
+                    <!-- ① 天気サマリーカード（余白をキュッと引き締めて縦スペースを節約） -->
+                    <div class="bg-white rounded-xl pt-2 px-3 pb-1.5 border border-[#e5e5ea] shadow-xs shrink-0 flex flex-col justify-between overflow-hidden">
                         
-                        <!-- 上部：中央揃えの日付・アイコン・天気名・気温 -->
-                        <div class="flex flex-col items-center justify-center text-center my-auto py-0.5 gap-1">
+                        <!-- 上部：中央揃えの日付・アイコン・天気名・気温（無駄なスカスカ余白を解消） -->
+                        <div class="flex flex-col items-center justify-center text-center py-0.5 gap-0.5">
                             <!-- 日付 -->
-                            <div id="imageStyleDate" class="text-[16px] md:text-[17px] font-black text-[#1c1c1e] tracking-wide leading-tight">--</div>
+                            <div id="imageStyleDate" class="text-[16px] md:text-[17px] font-black text-[#1c1c1e] tracking-tight leading-tight">--</div>
                             
                             <!-- 天気アイコン -->
-                            <div id="imageStyleIcon" class="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center select-none my-0.5"></div>
+                            <div id="imageStyleIcon" class="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center select-none my-0.5"></div>
                             
                             <!-- 天気名 -->
-                            <div id="imageStyleWeatherText" class="text-[16px] md:text-[17px] font-black text-[#1c1c1e] tracking-normal leading-snug px-1">--</div>
+                            <div id="imageStyleWeatherText" class="text-[15px] md:text-[16px] font-black text-[#1c1c1e] tracking-tight leading-snug px-1">--</div>
                             
                             <!-- 最高 / 最低 気温 -->
-                            <div class="flex items-baseline justify-center gap-3 text-[22px] md:text-[24px] font-black font-mono leading-none tracking-tight pt-0.5">
+                            <div class="flex items-baseline justify-center gap-3 text-[21px] md:text-[23px] font-black font-mono leading-none tracking-tight pt-0.5">
                                 <div class="text-[#e03131] flex items-baseline">
-                                    <span class="text-[14px] font-bold mr-0.5">最高</span>
-                                    <span id="imageStyleMaxTemp">--</span><span class="text-[14px] font-normal">℃</span>
+                                    <span class="text-[13px] font-bold mr-0.5">最高</span>
+                                    <span id="imageStyleMaxTemp">--</span><span class="text-[13px] font-normal">℃</span>
                                 </div>
                                 <div class="text-[#007aff] flex items-baseline">
-                                    <span class="text-[14px] font-bold mr-0.5">最低</span>
-                                    <span id="imageStyleMinTemp">--</span><span class="text-[14px] font-normal">℃</span>
+                                    <span class="text-[13px] font-bold mr-0.5">最低</span>
+                                    <span id="imageStyleMinTemp">--</span><span class="text-[13px] font-normal">℃</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- 下部：区切り線＋降水確率(6時間毎)4枠 ＆ 風速・風 -->
-                        <div class="pt-1 pb-1 border-t border-[#f2f2f7] space-y-0.5 shrink-0">
-                            <div class="text-[13px] md:text-[14px] font-extrabold text-[#1c1c1e] px-0.5 leading-none">降水確率 (6時間毎)</div>
-                            <div class="grid grid-cols-4 gap-1.5 text-center font-mono pt-0.5">
-                                <div class="bg-[#f8f9fa] border border-[#e5e5ea] rounded-lg py-0.5">
-                                    <div class="text-[12px] md:text-[13px] text-[#8e8e93] font-bold leading-none">0-6時</div>
+                        <div class="pt-1.5 pb-0.5 border-t border-[#f2f2f7] space-y-1 shrink-0 mt-1">
+                            <div class="text-[13px] font-extrabold text-[#1c1c1e] px-0.5 leading-none">降水確率 (6時間毎)</div>
+                            <div class="grid grid-cols-4 gap-1.5 text-center font-mono">
+                                <div class="bg-[#f8f9fa] border border-[#e5e5ea] rounded-lg py-1">
+                                    <div class="text-[12px] text-[#8e8e93] font-bold leading-none">0-6時</div>
                                     <div id="popSlot0" class="text-[14px] font-black text-[#007aff] leading-tight mt-0.5">--%</div>
                                 </div>
-                                <div class="bg-[#f8f9fa] border border-[#e5e5ea] rounded-lg py-0.5">
-                                    <div class="text-[12px] md:text-[13px] text-[#8e8e93] font-bold leading-none">6-12時</div>
+                                <div class="bg-[#f8f9fa] border border-[#e5e5ea] rounded-lg py-1">
+                                    <div class="text-[12px] text-[#8e8e93] font-bold leading-none">6-12時</div>
                                     <div id="popSlot1" class="text-[14px] font-black text-[#007aff] leading-tight mt-0.5">--%</div>
                                 </div>
-                                <div class="bg-[#f8f9fa] border border-[#e5e5ea] rounded-lg py-0.5">
-                                    <div class="text-[12px] md:text-[13px] text-[#8e8e93] font-bold leading-none">12-18時</div>
+                                <div class="bg-[#f8f9fa] border border-[#e5e5ea] rounded-lg py-1">
+                                    <div class="text-[12px] text-[#8e8e93] font-bold leading-none">12-18時</div>
                                     <div id="popSlot2" class="text-[14px] font-black text-[#007aff] leading-tight mt-0.5">--%</div>
                                 </div>
-                                <div class="bg-[#f8f9fa] border border-[#e5e5ea] rounded-lg py-0.5">
-                                    <div class="text-[12px] md:text-[13px] text-[#8e8e93] font-bold leading-none">18-24時</div>
+                                <div class="bg-[#f8f9fa] border border-[#e5e5ea] rounded-lg py-1">
+                                    <div class="text-[12px] text-[#8e8e93] font-bold leading-none">18-24時</div>
                                     <div id="popSlot3" class="text-[14px] font-black text-[#007aff] leading-tight mt-0.5">--%</div>
                                 </div>
                             </div>
 
                             <!-- 風速 ＆ 風の行 -->
-                            <div class="flex items-center justify-between px-0.5 leading-tight pt-1">
-                                <span class="font-bold text-[#4b5563] text-[13px] md:text-[14px] shrink-0">風速</span>
-                                <span id="subWindSpeed" class="font-mono font-black text-[#007aff] text-[14px] md:text-[15px]">約 -- m/s</span>
+                            <div class="flex items-center justify-between px-0.5 leading-tight pt-0.5">
+                                <span class="font-bold text-[#4b5563] text-[13px] shrink-0">風速</span>
+                                <span id="subWindSpeed" class="font-mono font-black text-[#007aff] text-[14px]">約 -- m/s</span>
                             </div>
                             <div class="flex items-center justify-between px-0.5 leading-tight pb-0.5 gap-2">
-                                <span class="font-bold text-[#4b5563] text-[13px] md:text-[14px] shrink-0">風</span>
-                                <span id="subWindDirection" class="font-bold text-[#1c1c1e] text-[14px] md:text-[15px] text-right truncate">--</span>
+                                <span class="font-bold text-[#4b5563] text-[13px] shrink-0">風</span>
+                                <span id="subWindDirection" class="font-bold text-[#1c1c1e] text-[14px] text-right truncate">--</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- ② 直近の雨予測バナー -->
-                    <div id="nextRainBanner" class="bg-blue-50/95 border border-blue-200 rounded-lg px-2.5 py-1 shadow-2xs flex items-center gap-1.5 shrink-0">
-                        <span class="text-sm shrink-0">🌧️</span>
+                    <!-- ② 直近の雨予測バナー（ゆとりを持たせたパディング） -->
+                    <div id="nextRainBanner" class="bg-blue-50/95 border border-blue-200 rounded-lg px-3 py-1.5 shadow-2xs flex items-center gap-2 shrink-0">
+                        <span class="text-base shrink-0">🌧️</span>
                         <div class="flex-1 min-w-0 flex items-center justify-between gap-1.5">
                             <span class="text-[13px] md:text-[14px] font-extrabold text-blue-700 shrink-0">今後の雨:</span>
                             <span id="nextRainText" class="text-[13px] md:text-[14px] font-bold text-[#1c1c1e] truncate text-right">計算中...</span>
                         </div>
                     </div>
 
-                    <!-- ③ 推奨服装カード（高さをコンパクトにしてサマリーカードを保護） -->
-                    <div class="bg-gradient-to-br from-orange-50/95 to-amber-50/70 rounded-xl p-2 border border-orange-200/90 shadow-xs shrink-0 flex flex-col justify-start space-y-[2px]">
+                    <!-- ③ 推奨服装カード（flex-1で広がり、行間や余白に余裕を持ったゆったり設計） -->
+                    <div class="bg-gradient-to-br from-orange-50/95 to-amber-50/70 rounded-xl p-2.5 border border-orange-200/90 shadow-xs flex-1 flex flex-col justify-between gap-1.5 min-h-0 overflow-hidden">
                         
                         <!-- 見出し & 体感温度 & 基準ラベル -->
-                        <div class="flex items-center justify-between border-b border-orange-200/80 pb-0.5 shrink-0">
+                        <div class="flex items-center justify-between border-b border-orange-200/80 pb-1 shrink-0">
                             <span class="text-[14px] md:text-[15px] font-extrabold text-[#b45309] flex items-center gap-1.5">
                                 <span>👔</span><span>本日の推奨服装</span>
                             </span>
                             <div class="flex items-center gap-1.5">
-                                <span class="inline-flex items-center gap-0.5 text-[13px] md:text-[14px] font-bold text-orange-800 bg-orange-100/90 px-2 py-0.5 rounded-full border border-orange-300 shadow-2xs leading-none">
+                                <span class="inline-flex items-center gap-1 text-[13px] font-bold text-orange-800 bg-orange-100/90 px-2 py-0.5 rounded-full border border-orange-300 shadow-2xs leading-none">
                                     <span>体感:</span>
-                                    <span id="imageStyleApparentTemp" class="font-mono font-black text-[13px] md:text-[14px] leading-none">--℃</span>
+                                    <span id="imageStyleApparentTemp" class="font-mono font-black text-[13px] leading-none">--℃</span>
                                 </span>
-                                <span id="criteriaBadge" class="text-[13px] md:text-[14px] bg-white px-1.5 py-0.5 rounded-md border border-orange-200 text-[#374151] font-bold shadow-2xs">--</span>
+                                <span id="criteriaBadge" class="text-[13px] bg-white px-1.5 py-0.5 rounded-md border border-orange-200 text-[#374151] font-bold shadow-2xs">--</span>
                             </div>
                         </div>
 
                         <!-- 【トップス】＆【ズボン】 -->
-                        <div id="outfitSection" class="grid grid-cols-2 gap-[3px] shrink-0">
+                        <div id="outfitSection" class="grid grid-cols-2 gap-1.5 shrink-0">
                             <!-- JS生成 -->
                         </div>
 
                         <!-- 朝・昼・夜の寒暖差 -->
-                        <div class="bg-white/95 rounded-lg px-2 py-1 border border-[#e5e5ea] space-y-0.5 shadow-2xs shrink-0">
+                        <div class="bg-white/95 rounded-lg px-2.5 py-1.5 border border-[#e5e5ea] space-y-1 shadow-2xs shrink-0">
                             <div class="flex items-center justify-between px-0.5">
                                 <span class="font-extrabold text-[#b45309] text-[13px] flex items-center gap-1 leading-none">
                                     <span>🕒</span><span>朝・昼・夜の寒暖差目安</span>
                                 </span>
                             </div>
-                            <div id="timeTimeline" class="grid grid-cols-3 gap-1 text-center">
+                            <div id="timeTimeline" class="grid grid-cols-3 gap-1.5 text-center">
                                 <!-- JS生成 -->
                             </div>
                         </div>
 
                         <!-- ワンポイントアドバイス -->
-                        <div class="bg-white/90 rounded-lg px-2 py-1 border border-orange-200/70 shadow-2xs shrink-0 flex items-center min-h-[28px]">
-                            <div id="accessoryAdvice" class="text-[13px] md:text-[14px] font-medium text-[#374151] leading-tight truncate">
+                        <div class="bg-white/90 rounded-lg px-2.5 py-1.5 border border-orange-200/70 shadow-2xs shrink-0 flex items-center min-h-[30px]">
+                            <div id="accessoryAdvice" class="text-[13px] md:text-[14px] font-medium text-[#374151] leading-relaxed truncate">
                                 <!-- JS生成 -->
                             </div>
                         </div>
                     </div>
 
                     <!-- ④ 左画面最下部: 地点登録・管理エリア -->
-                    <div class="bg-white rounded-xl p-1 md:p-1.5 border border-[#e5e5ea] shadow-xs space-y-1 shrink-0">
+                    <div class="bg-white rounded-xl p-1.5 border border-[#e5e5ea] shadow-xs space-y-1 shrink-0">
                         <div class="flex items-center justify-between px-0.5">
                             <span class="text-[14px] font-extrabold text-[#1c1c1e] flex items-center gap-1 leading-none">
                                 <span>📍</span><span>登録地点の追加・管理</span>
@@ -985,13 +985,31 @@
 
             document.getElementById('criteriaBadge').innerText = outfit.label;
             document.getElementById('outfitSection').innerHTML = `
-                <div class="bg-white/95 rounded-lg px-2 py-1.5 border border-orange-200/80 shadow-2xs flex flex-col justify-center min-h-[46px]">
-                    <div class="text-[12px] md:text-[13px] font-bold text-[#b45309] uppercase tracking-wider leading-none">【トップス・上着】</div>
-                    <div class="text-[#1c1c1e] font-extrabold text-[14px] md:text-[15px] leading-tight mt-0.5 truncate">${outfit.jacket}</div>
+                <div class="bg-white/95 rounded-lg px-2.5 py-1.5 border border-orange-200/80 shadow-2xs flex flex-col justify-center min-h-[48px]">
+                    <div class="text-[12px] font-bold text-[#b45309] uppercase tracking-wider leading-none">【トップス・上着】</div>
+                    <div class="text-[#1c1c1e] font-extrabold text-[14px] md:text-[15px] leading-snug mt-1 truncate">${outfit.jacket}</div>
                 </div>
-                <div class="bg-white/95 rounded-lg px-2 py-1.5 border border-orange-200/80 shadow-2xs flex flex-col justify-center min-h-[46px]">
-                    <div class="text-[12px] md:text-[13px] font-bold text-[#b45309] uppercase tracking-wider leading-none">【ボトムス・ズボン】</div>
-                    <div class="text-[#1c1c1e] font-extrabold text-[14px] md:text-[15px] leading-tight mt-0.5 truncate">${escapeHtml(outfit.pants)}</div>
+                <div class="bg-white/95 rounded-lg px-2.5 py-1.5 border border-orange-200/80 shadow-2xs flex flex-col justify-center min-h-[48px]">
+                    <div class="text-[12px] font-bold text-[#b45309] uppercase tracking-wider leading-none">【ボトムス・ズボン】</div>
+                    <div class="text-[#1c1c1e] font-extrabold text-[14px] md:text-[15px] leading-snug mt-1 truncate">${escapeHtml(outfit.pants)}</div>
+                </div>
+            `;
+
+            document.getElementById('timeTimeline').innerHTML = `
+                <div class="bg-[#f8f9fa] rounded-md py-1 px-1 border border-[#e5e5ea] flex flex-col items-center justify-between">
+                    <div class="text-[#4b5563] text-[12px] font-bold leading-none">朝 (8時)</div>
+                    <div class="font-black text-[#1c1c1e] font-mono text-[15px] leading-none my-1">${data.morningTemp}℃</div>
+                    <div class="text-[12px] font-extrabold text-[#374151] leading-none">${data.morningTemp <= 15 ? '羽織り推奨' : '快適'}</div>
+                </div>
+                <div class="bg-[#f8f9fa] rounded-md py-1 px-1 border border-[#e5e5ea] flex flex-col items-center justify-between">
+                    <div class="text-[#4b5563] text-[12px] font-bold leading-none">昼 (14時)</div>
+                    <div class="font-black text-orange-600 font-mono text-[15px] leading-none my-1">${data.noonTemp}℃</div>
+                    <div class="text-[12px] font-extrabold text-[#374151] leading-none">${data.noonTemp >= 22 ? '上着不要' : '適温'}</div>
+                </div>
+                <div class="bg-[#f8f9fa] rounded-md py-1 px-1 border border-[#e5e5ea] flex flex-col items-center justify-between">
+                    <div class="text-[#4b5563] text-[12px] font-bold leading-none">夜 (20時)</div>
+                    <div class="font-black text-[#007aff] font-mono text-[15px] leading-none my-1">${data.nightTemp}℃</div>
+                    <div class="text-[12px] font-extrabold text-[#374151] leading-none">${data.nightTemp <= 14 ? '冷え込み注意' : '過ごしやすい'}</div>
                 </div>
             `;
 
