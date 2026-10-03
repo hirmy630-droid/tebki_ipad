@@ -884,16 +884,10 @@
                 const todayStr = getTodayDateString();
                 const tomorrowStr = getTomorrowDateString();
 
-                // Open-Meteo: 湿度(relative_humidity_2m)を含めた安定パラメータで日本データモデルと連携
-                const cacheBuster = `&_t=${Date.now()}`;
-                const jmaForecastUrl = `https://www.jma.go.jp/bosai/forecast/data/forecast/${areaInfo.code}.json?_t=${Date.now()}`;
-                const jmaOverviewUrl = `https://www.jma.go.jp/bosai/forecast/data/overview_forecast/${areaInfo.code}.json?_t=${Date.now()}`;
-                const meteoUrl = `https://api.open-meteo.com/v1/forecast?latitude=${areaInfo.lat}&longitude=${areaInfo.lon}&daily=weathercode,temperature_2m_max,temperature_2m_min,windspeed_10m_max,precipitation_probability_max&hourly=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation_probability,weathercode,windspeed_10m&timezone=Asia%2FTokyo&forecast_days=8${cacheBuster}`;
-
                 const [jmaRes, jmaOverviewRes, meteoRes] = await Promise.all([
-                    fetch(jmaForecastUrl).catch(() => null),
-                    fetch(jmaOverviewUrl).catch(() => null),
-                    fetch(meteoUrl).catch(() => null)
+                    fetch(`https://www.jma.go.jp/bosai/forecast/data/forecast/${areaInfo.code}.json?_t=${Date.now()}`).catch(() => null),
+                    fetch(`https://www.jma.go.jp/bosai/forecast/data/overview_forecast/${areaInfo.code}.json?_t=${Date.now()}`).catch(() => null),
+                    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${areaInfo.lat}&longitude=${areaInfo.lon}&daily=weathercode,temperature_2m_max,temperature_2m_min,windspeed_10m_max,precipitation_probability_max&hourly=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation_probability,weathercode,windspeed_10m&timezone=Asia%2FTokyo&forecast_days=8&_t=${Date.now()}`).catch(() => null)
                 ]);
 
                 const jmaData = (jmaRes && jmaRes.ok) ? await jmaRes.json() : null;
@@ -902,7 +896,6 @@
                 cachedRawJmaData = jmaData;
 
                 cachedNextRainInfo = calculateNextRain(meteoData);
-                renderWeeklyList(meteoData, jmaData);
 
                 const parseDayData = (dateStr, fallbackIdx, labelPrefix) => {
                     let weatherText = 'くもり';
@@ -1025,7 +1018,6 @@
                         nightTemp = findHourVal(20);
 
                         // 【服装判定の基準時間：10時〜15時の体感温度平均値】
-                        // オーストラリア気象局式（AT式: 気温・湿度・風速連動）
                         let targetHoursApparent = [];
                         for (let h = 10; h <= 15; h++) {
                             const prefix = `${dateStr}T${String(h).padStart(2, '0')}`;
@@ -1127,6 +1119,9 @@
                     today: parseDayData(todayStr, 0, '今日'),
                     tomorrow: parseDayData(tomorrowStr, 1, '明日')
                 };
+
+                // 週間予報の描画（明日のデータを左側メインカードと完全に一致させる）
+                renderWeeklyList(meteoData, jmaData);
 
                 updateTabStyles();
                 renderForecastView(cachedForecastData[selectedDay]);
@@ -1279,7 +1274,7 @@
 
             const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
 
-            listContainer.innerHTML = dates.map(dateStr => {
+            listContainer.innerHTML = dates.map((dateStr, dateIndex) => {
                 const d = new Date(dateStr + 'T00:00:00');
                 const dayIndex = d.getDay();
                 let colorClass = 'text-[#1c1c1e]';
@@ -1287,39 +1282,59 @@
                 else if (dayIndex === 6) colorClass = 'text-[#007aff]';
 
                 let maxT = null, minT = null, pop = null, wSpeed = 2, code = null;
-                const jIdx = jmaTimes.findIndex(t => t.startsWith(dateStr));
-                if (jIdx !== -1) {
-                    if (jmaPops[jIdx] !== undefined && jmaPops[jIdx] !== '') {
-                        pop = parseInt(jmaPops[jIdx], 10);
-                    }
-                    if (jmaCodes[jIdx]) code = jmaCodes[jIdx];
-                    if (jmaMaxs[jIdx] !== undefined && jmaMaxs[jIdx] !== '') {
-                        const parsedMax = parseInt(jmaMaxs[jIdx], 10);
-                        if (!isNaN(parsedMax)) maxT = parsedMax;
-                    }
-                    if (jmaMins[jIdx] !== undefined && jmaMins[jIdx] !== '') {
-                        const parsedMin = parseInt(jmaMins[jIdx], 10);
-                        if (!isNaN(parsedMin)) minT = parsedMin;
-                    }
-                }
 
-                if (meteoDaily?.time) {
-                    const mIdx = meteoDaily.time.indexOf(dateStr);
-                    if (mIdx !== -1) {
-                        if (maxT === null && meteoDaily.temperature_2m_max?.[mIdx] !== undefined) {
-                            maxT = Math.round(meteoDaily.temperature_2m_max[mIdx]);
+                // ★ 明日（1日目）は、左側メインカードの気象庁短期高精度データと100%完全一致させる
+                if (dateIndex === 0 && cachedForecastData?.tomorrow) {
+                    const tmData = cachedForecastData.tomorrow;
+                    maxT = tmData.maxTemp;
+                    minT = tmData.minTemp;
+                    pop = Math.max(...tmData.pop6h);
+                    wSpeed = Math.round(tmData.maxWindSpeed);
+
+                    if (tmData.weatherText.includes('雨')) {
+                        code = 61;
+                    } else if (tmData.weatherText.includes('晴') && tmData.weatherText.includes('曇')) {
+                        code = 2;
+                    } else if (tmData.weatherText.includes('晴')) {
+                        code = 0;
+                    } else {
+                        code = 3;
+                    }
+                } else {
+                    const jIdx = jmaTimes.findIndex(t => t.startsWith(dateStr));
+                    if (jIdx !== -1) {
+                        if (jmaPops[jIdx] !== undefined && jmaPops[jIdx] !== '') {
+                            pop = parseInt(jmaPops[jIdx], 10);
                         }
-                        if (minT === null && meteoDaily.temperature_2m_min?.[mIdx] !== undefined) {
-                            minT = Math.round(meteoDaily.temperature_2m_min[mIdx]);
+                        if (jmaCodes[jIdx]) code = jmaCodes[jIdx];
+                        if (jmaMaxs[jIdx] !== undefined && jmaMaxs[jIdx] !== '') {
+                            const parsedMax = parseInt(jmaMaxs[jIdx], 10);
+                            if (!isNaN(parsedMax)) maxT = parsedMax;
                         }
-                        if (pop === null && meteoDaily.precipitation_probability_max?.[mIdx] !== undefined) {
-                            pop = meteoDaily.precipitation_probability_max[mIdx];
+                        if (jmaMins[jIdx] !== undefined && jmaMins[jIdx] !== '') {
+                            const parsedMin = parseInt(jmaMins[jIdx], 10);
+                            if (!isNaN(parsedMin)) minT = parsedMin;
                         }
-                        if (meteoDaily.windspeed_10m_max?.[mIdx] !== undefined) {
-                            wSpeed = Math.round(meteoDaily.windspeed_10m_max[mIdx] / 3.6);
-                        }
-                        if (!code && meteoDaily.weathercode?.[mIdx] !== undefined) {
-                            code = meteoDaily.weathercode[mIdx];
+                    }
+
+                    if (meteoDaily?.time) {
+                        const mIdx = meteoDaily.time.indexOf(dateStr);
+                        if (mIdx !== -1) {
+                            if (maxT === null && meteoDaily.temperature_2m_max?.[mIdx] !== undefined) {
+                                maxT = Math.round(meteoDaily.temperature_2m_max[mIdx]);
+                            }
+                            if (minT === null && meteoDaily.temperature_2m_min?.[mIdx] !== undefined) {
+                                minT = Math.round(meteoDaily.temperature_2m_min[mIdx]);
+                            }
+                            if (pop === null && meteoDaily.precipitation_probability_max?.[mIdx] !== undefined) {
+                                pop = meteoDaily.precipitation_probability_max[mIdx];
+                            }
+                            if (meteoDaily.windspeed_10m_max?.[mIdx] !== undefined) {
+                                wSpeed = Math.round(meteoDaily.windspeed_10m_max[mIdx] / 3.6);
+                            }
+                            if (!code && meteoDaily.weathercode?.[mIdx] !== undefined) {
+                                code = meteoDaily.weathercode[mIdx];
+                            }
                         }
                     }
                 }
@@ -1370,26 +1385,64 @@
             let weatherText = 'くもり';
             let weatherCode = 2;
 
-            // ① 気象庁データの直近チェック (明日〜明後日のJMA 6時間毎データがある場合優先反映)
-            if (Array.isArray(cachedRawJmaData) && cachedRawJmaData.length > 0) {
-                const pArea = cachedRawJmaData[0]?.timeSeries?.[1]?.areas?.[0];
-                const pDef = cachedRawJmaData[0]?.timeSeries?.[1]?.timeDefines || [];
-                if (pArea?.pops) {
-                    pDef.forEach((t, idx) => {
-                        if (t.startsWith(dateStr) && pArea.pops[idx] !== undefined && pArea.pops[idx] !== '') {
-                            const v = parseInt(pArea.pops[idx], 10);
-                            if (!isNaN(v)) {
-                                if (t.includes('T00:00')) pop6h[0] = v;
-                                else if (t.includes('T06:00')) pop6h[1] = v;
-                                else if (t.includes('T12:00')) pop6h[2] = v;
-                                else if (t.includes('T18:00')) pop6h[3] = v;
+            // ★ 明日をタップした際は、左側メインカードの短期予報データと100%完全一致させる
+            const tomorrowStr = getTomorrowDateString();
+            if (dateStr === tomorrowStr && cachedForecastData?.tomorrow) {
+                const tmData = cachedForecastData.tomorrow;
+                maxTemp = tmData.maxTemp;
+                minTemp = tmData.minTemp;
+                maxWindSpeed = tmData.maxWindSpeed;
+                weatherText = tmData.weatherText;
+                pop6h = [...tmData.pop6h];
+            } else {
+                // ① 気象庁データの直近チェック (明後日などのJMA 6時間毎データがある場合優先反映)
+                if (Array.isArray(cachedRawJmaData) && cachedRawJmaData.length > 0) {
+                    const pArea = cachedRawJmaData[0]?.timeSeries?.[1]?.areas?.[0];
+                    const pDef = cachedRawJmaData[0]?.timeSeries?.[1]?.timeDefines || [];
+                    if (pArea?.pops) {
+                        pDef.forEach((t, idx) => {
+                            if (t.startsWith(dateStr) && pArea.pops[idx] !== undefined && pArea.pops[idx] !== '') {
+                                const v = parseInt(pArea.pops[idx], 10);
+                                if (!isNaN(v)) {
+                                    if (t.includes('T00:00')) pop6h[0] = v;
+                                    else if (t.includes('T06:00')) pop6h[1] = v;
+                                    else if (t.includes('T12:00')) pop6h[2] = v;
+                                    else if (t.includes('T18:00')) pop6h[3] = v;
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
+                }
+
+                // ② 日付全体の最高・最低気温と天気
+                const daily = cachedRawMeteoData?.daily;
+                if (daily?.time) {
+                    const mIdx = daily.time.indexOf(dateStr);
+                    if (mIdx !== -1) {
+                        if (daily.temperature_2m_max?.[mIdx] !== undefined) maxTemp = Math.round(daily.temperature_2m_max[mIdx]);
+                        if (daily.temperature_2m_min?.[mIdx] !== undefined) minTemp = Math.round(daily.temperature_2m_min[mIdx]);
+                        if (daily.windspeed_10m_max?.[mIdx] !== undefined) maxWindSpeed = Math.round(daily.windspeed_10m_max[mIdx] / 3.6);
+                        if (daily.weathercode?.[mIdx] !== undefined) weatherCode = daily.weathercode[mIdx];
+                    }
+                }
+
+                // 気象庁の週間予報値もフォールバック確認
+                const jmaWeek = cachedRawJmaData?.[1]?.timeSeries;
+                const jmaTimes = jmaWeek?.[0]?.timeDefines || [];
+                const jIdx = jmaTimes.findIndex(t => t.startsWith(dateStr));
+                if (jIdx !== -1 && jmaWeek) {
+                    if (maxTemp === null && jmaWeek[1]?.areas?.[0]?.tempsMax?.[jIdx] !== undefined && jmaWeek[1].areas[0].tempsMax[jIdx] !== '') {
+                        const parsed = parseInt(jmaWeek[1].areas[0].tempsMax[jIdx], 10);
+                        if (!isNaN(parsed)) maxTemp = parsed;
+                    }
+                    if (minTemp === null && jmaWeek[1]?.areas?.[0]?.tempsMin?.[jIdx] !== undefined && jmaWeek[1].areas[0].tempsMin[jIdx] !== '') {
+                        const parsed = parseInt(jmaWeek[1].areas[0].tempsMin[jIdx], 10);
+                        if (!isNaN(parsed)) minTemp = parsed;
+                    }
                 }
             }
 
-            // ② Open-Meteoの毎時データから正確に6時間スロットを補正・抽出
+            // 毎時データから6時間スロットの気温平均と未取得枠の降水確率を補完
             const hourly = cachedRawMeteoData?.hourly;
             if (hourly?.time) {
                 const slotRanges = [
@@ -1425,46 +1478,21 @@
                 });
             }
 
-            // ③ 日付全体の最高・最低気温と天気
-            const daily = cachedRawMeteoData?.daily;
-            if (daily?.time) {
-                const mIdx = daily.time.indexOf(dateStr);
-                if (mIdx !== -1) {
-                    if (daily.temperature_2m_max?.[mIdx] !== undefined) maxTemp = Math.round(daily.temperature_2m_max[mIdx]);
-                    if (daily.temperature_2m_min?.[mIdx] !== undefined) minTemp = Math.round(daily.temperature_2m_min[mIdx]);
-                    if (daily.windspeed_10m_max?.[mIdx] !== undefined) maxWindSpeed = Math.round(daily.windspeed_10m_max[mIdx] / 3.6);
-                    if (daily.weathercode?.[mIdx] !== undefined) weatherCode = daily.weathercode[mIdx];
-                }
-            }
-
-            // 気象庁の週間予報値もフォールバック確認
-            const jmaWeek = cachedRawJmaData?.[1]?.timeSeries;
-            const jmaTimes = jmaWeek?.[0]?.timeDefines || [];
-            const jIdx = jmaTimes.findIndex(t => t.startsWith(dateStr));
-            if (jIdx !== -1 && jmaWeek) {
-                if (maxTemp === null && jmaWeek[1]?.areas?.[0]?.tempsMax?.[jIdx] !== undefined && jmaWeek[1].areas[0].tempsMax[jIdx] !== '') {
-                    const parsed = parseInt(jmaWeek[1].areas[0].tempsMax[jIdx], 10);
-                    if (!isNaN(parsed)) maxTemp = parsed;
-                }
-                if (minTemp === null && jmaWeek[1]?.areas?.[0]?.tempsMin?.[jIdx] !== undefined && jmaWeek[1].areas[0].tempsMin[jIdx] !== '') {
-                    const parsed = parseInt(jmaWeek[1].areas[0].tempsMin[jIdx], 10);
-                    if (!isNaN(parsed)) minTemp = parsed;
-                }
-            }
-
             // 6時間枠のnull対策
             pop6h = pop6h.map(p => (p !== null ? p : 10));
 
-            // 天気概要のテキスト決定
-            const maxSlotPop = Math.max(...pop6h);
-            if ((weatherCode >= 51 && weatherCode <= 67) || (weatherCode >= 80 && weatherCode <= 82) || maxSlotPop >= 60) {
-                weatherText = '雨';
-            } else if (weatherCode === 0 || weatherCode === 1) {
-                weatherText = '晴れ';
-            } else if (weatherCode === 2) {
-                weatherText = '晴れ時々曇り';
-            } else {
-                weatherText = 'くもり';
+            // 天気概要のテキスト決定（明日以外の場合）
+            if (dateStr !== tomorrowStr || !cachedForecastData?.tomorrow) {
+                const maxSlotPop = Math.max(...pop6h);
+                if ((weatherCode >= 51 && weatherCode <= 67) || (weatherCode >= 80 && weatherCode <= 82) || maxSlotPop >= 60) {
+                    weatherText = '雨';
+                } else if (weatherCode === 0 || weatherCode === 1) {
+                    weatherText = '晴れ';
+                } else if (weatherCode === 2) {
+                    weatherText = '晴れ時々曇り';
+                } else {
+                    weatherText = 'くもり';
+                }
             }
 
             // DOMに反映
@@ -1494,6 +1522,7 @@
             }
 
             // 雨リスクバッジとアドバイス
+            const maxSlotPop = Math.max(...pop6h);
             const riskBadge = document.getElementById('wModalRainRiskBadge');
             const adviceText = document.getElementById('wModalAdviceText');
             if (maxSlotPop >= 60) {
