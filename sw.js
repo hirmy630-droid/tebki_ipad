@@ -1,4 +1,4 @@
-const CACHE_NAME = 'weather-clothes-cache-v28'; // バージョンを更新して確実な反映
+const CACHE_NAME = 'weather-clothes-cache-v29'; // 更新が確実に反映されるようバージョン変更
 const urlsToCache = [
   './',
   './index.html',
