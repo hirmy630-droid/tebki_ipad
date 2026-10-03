@@ -64,8 +64,8 @@
     <!-- ==================== メイン画面: 天気・服装・地点管理の完全統合ダッシュボード ==================== -->
     <div id="forecastScreenContainer" class="flex flex-col h-full w-full overflow-hidden">
         
-        <!-- iPad上部のボケ・見切れ防止用 11pxスペーサー -->
-        <div class="h-[11px] min-h-[11px] max-h-[11px] w-full shrink-0 bg-[#f2f2f7]"></div>
+        <!-- iPad上部のボケ・見切れ防止用 30pxスペーサー (+5px拡大) -->
+        <div class="h-[30px] min-h-[30px] max-h-[30px] w-full shrink-0 bg-[#f2f2f7]"></div>
 
         <!-- Navigation Bar: 高さを最小限に抑えてメイン表示領域を最大化 -->
         <header class="w-full bg-white/95 backdrop-blur-md border-b border-[#e5e5ea] px-3 md:px-5 py-1 shrink-0 z-30">
@@ -110,22 +110,22 @@
                 <!-- ================= 左画面: 対象日の天気サマリー & 推奨服装 & 地点登録 (5カラム) ================= -->
                 <div class="md:col-span-5 flex flex-col justify-between gap-1.5 h-full overflow-hidden min-h-0">
                     
-                    <!-- ① 天気サマリーカード -->
+                    <!-- ① 天気サマリーカード（画像領域の枠サイズはそのまま保持） -->
                     <div class="bg-white rounded-xl pt-2 px-3 pb-1.5 border border-[#e5e5ea] shadow-xs flex-1 flex flex-col justify-between overflow-hidden min-h-0">
                         
-                        <!-- 上部：中央揃えの日付・アイコン・天気名・気温 -->
-                        <div class="flex flex-col items-center justify-center text-center my-auto py-1">
+                        <!-- 上部：中央揃えの日付・アイコン・天気名・気温（行間・要素間のゆとりを拡張） -->
+                        <div class="flex flex-col items-center justify-center text-center my-auto py-1 gap-1.5">
                             <!-- 日付 -->
-                            <div id="imageStyleDate" class="text-[16px] md:text-[17px] font-black text-[#1c1c1e] tracking-normal leading-tight">--</div>
+                            <div id="imageStyleDate" class="text-[16px] md:text-[17px] font-black text-[#1c1c1e] tracking-wide leading-snug">--</div>
                             
                             <!-- 天気アイコン -->
-                            <div id="imageStyleIcon" class="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center my-1 select-none"></div>
+                            <div id="imageStyleIcon" class="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center select-none my-0.5"></div>
                             
-                            <!-- 天気名 -->
-                            <div id="imageStyleWeatherText" class="text-[16px] md:text-[17px] font-black text-[#1c1c1e] tracking-normal leading-tight mb-1">--</div>
+                            <!-- 天気名（少し行間を広げ、読みやすく配置） -->
+                            <div id="imageStyleWeatherText" class="text-[16px] md:text-[17px] font-black text-[#1c1c1e] tracking-normal leading-relaxed px-1">--</div>
                             
                             <!-- 最高 / 最低 気温 -->
-                            <div class="flex items-baseline justify-center gap-3 text-[22px] md:text-[24px] font-black font-mono leading-none tracking-tight">
+                            <div class="flex items-baseline justify-center gap-3 text-[22px] md:text-[24px] font-black font-mono leading-normal tracking-tight pt-0.5">
                                 <div class="text-[#e03131] flex items-baseline">
                                     <span class="text-[14px] font-bold mr-0.5">最高</span>
                                     <span id="imageStyleMaxTemp">--</span><span class="text-[14px] font-normal">℃</span>
@@ -696,7 +696,7 @@
                 }
             }
 
-            if (foundIdx === -1) return { text: 'この先1週間は雨の心配なし ☀️' };
+            if (foundIdx === -1) return { text: 'この先1週間は雨の心配なし ☀' };
 
             const target = new Date(times[foundIdx]);
             const popVal = pops[foundIdx] ?? 0;
