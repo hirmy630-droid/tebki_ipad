@@ -666,14 +666,22 @@
             return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         }
 
+        // 次の雨予測（日本時間JSTで厳密に判定して9時間ズレを完全解消）
         function calculateNextRain(meteoData) {
             if (!meteoData?.hourly?.time) return { text: '取得中', status: 'unknown' };
             const times = meteoData.hourly.time;
             const pops = meteoData.hourly.precipitation_probability || [];
             const codes = meteoData.hourly.weathercode || [];
+            
+            // 日本時間(JST)のプレフィックスを生成
             const now = new Date();
-            const prefix = now.toISOString().slice(0, 13);
-            let startIdx = times.findIndex(t => t >= prefix);
+            const jstYear = now.getFullYear();
+            const jstMonth = String(now.getMonth() + 1).padStart(2, '0');
+            const jstDate = String(now.getDate()).padStart(2, '0');
+            const jstHour = String(now.getHours()).padStart(2, '0');
+            const currentJstPrefix = `${jstYear}-${jstMonth}-${jstDate}T${jstHour}`;
+
+            let startIdx = times.findIndex(t => t >= currentJstPrefix);
             if (startIdx === -1) startIdx = 0;
 
             const daysNames = ['日', '月', '火', '水', '木', '金', '土'];
@@ -803,6 +811,17 @@
                                 });
                             }
                         }
+
+                        // 週間データによる気象庁気温補完（予報官公式判定値の取りこぼし防止）
+                        if ((minTemp === null || maxTemp === null) && jmaData[1]?.timeSeries?.[1]) {
+                            const weekArea = jmaData[1].timeSeries[1].areas?.[0];
+                            const weekDefines = jmaData[1].timeSeries[1].timeDefines || [];
+                            const weekIdx = weekDefines.findIndex(t => t.startsWith(dateStr));
+                            if (weekIdx !== -1 && weekArea) {
+                                if (minTemp === null && weekArea.tempsMin?.[weekIdx]) minTemp = parseInt(weekArea.tempsMin[weekIdx], 10);
+                                if (maxTemp === null && weekArea.tempsMax?.[weekIdx]) maxTemp = parseInt(weekArea.tempsMax[weekIdx], 10);
+                            }
+                        }
                     }
 
                     // ② 数値モデルによる補完・毎時データ抽出
@@ -893,8 +912,13 @@
                         }
                     }
 
+                    // 気温の安全ガード（逆転や同一値の防止）
                     if (maxTemp === null) maxTemp = 22;
                     if (minTemp === null) minTemp = 15;
+                    if (minTemp >= maxTemp) {
+                        minTemp = maxTemp - 5;
+                    }
+
                     if (apparentTemp === null) apparentTemp = maxTemp - 2;
                     if (morningTemp === null) morningTemp = minTemp + 2;
                     if (noonTemp === null) noonTemp = maxTemp;
@@ -1096,6 +1120,18 @@
                     </div>
                 `;
             }).join('');
+        }
+        
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        registration.update();
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    }, err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
         }
     </script>
 </body>
