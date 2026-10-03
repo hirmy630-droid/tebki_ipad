@@ -122,13 +122,14 @@
             <div class="max-w-[1600px] mx-auto w-full h-full grid grid-cols-1 md:grid-cols-12 gap-2 items-stretch min-h-0">
                 
                 <!-- ================= 左画面: 対象日の天気サマリー & 推奨服装 & 地点登録 (5カラム) ================= -->
-                <div class="md:col-span-5 flex flex-col justify-between gap-1.5 h-full overflow-hidden min-h-0">
+                <!-- 修正: iPadで上部が伸びすぎず、全体がバランスよく配分されるよう flex レイアウトを最適化 -->
+                <div class="md:col-span-5 flex flex-col gap-2 h-full overflow-hidden min-h-0">
                     
-                    <!-- ① 天気サマリーカード -->
-                    <div class="bg-white rounded-xl pt-2 px-3 pb-1.5 border border-[#e5e5ea] shadow-xs flex-1 flex flex-col justify-between overflow-hidden min-h-0">
+                    <!-- ① 天気サマリーカード（過剰な縦伸びを抑制し、Mac版同様のコンパクトで整った比率に固定） -->
+                    <div class="bg-white rounded-xl pt-2 px-3 pb-1.5 border border-[#e5e5ea] shadow-xs shrink-0 flex flex-col justify-between overflow-hidden">
                         
                         <!-- 上部：引き締めた余白で視認性抜群の日付・アイコン・天気名・気温 -->
-                        <div class="flex flex-col items-center justify-center text-center my-auto py-0.5">
+                        <div class="flex flex-col items-center justify-center text-center py-1">
                             <!-- 日付 -->
                             <div id="imageStyleDate" class="text-[16px] md:text-[17px] font-black text-[#1c1c1e] tracking-tight leading-tight">--</div>
                             
@@ -152,7 +153,7 @@
                         </div>
 
                         <!-- 下部：降水確率(6時間毎)4枠 ＆ 風速・風 -->
-                        <div class="pt-1 pb-1 border-t border-[#f2f2f7] space-y-1 shrink-0">
+                        <div class="pt-1.5 pb-1 border-t border-[#f2f2f7] space-y-1 shrink-0">
                             <div class="text-[14px] font-extrabold text-[#1c1c1e] px-0.5 leading-none">降水確率 (6時間毎)</div>
                             <div class="grid grid-cols-4 gap-1.5 text-center font-mono">
                                 <div class="bg-[#f8f9fa] border border-[#e5e5ea] rounded-lg py-0.5">
@@ -185,11 +186,11 @@
                         </div>
                     </div>
 
-                    <!-- ② 直近の雨予測バナー（ラベルの場所にプルダウンを配置し、右端までテキスト領域を最大確保） -->
+                    <!-- ② 直近の雨予測バナー -->
                     <div id="nextRainBanner" class="bg-blue-50/95 border border-blue-200 rounded-lg px-2.5 py-1.5 shadow-2xs flex items-center gap-2 shrink-0 select-none">
                         <span class="text-base shrink-0">🌧️</span>
                         
-                        <!-- 「今後の雨:」ラベルの場所にコンパクトな基準プルダウンを配置 -->
+                        <!-- 基準プルダウン -->
                         <div class="relative shrink-0 flex items-center">
                             <select 
                                 id="rainThresholdSelect" 
@@ -203,12 +204,12 @@
                             <span class="absolute right-1.5 pointer-events-none text-blue-700 text-[10px] font-bold">▼</span>
                         </div>
 
-                        <!-- 予測テキスト（右端まで広々と使えるため途中で切れなくなります） -->
+                        <!-- 予測テキスト -->
                         <span id="nextRainText" class="text-[14px] font-bold text-[#1c1c1e] min-w-0 flex-1 truncate">計算中...</span>
                     </div>
 
-                    <!-- ③ 推奨服装カード（見やすい行間・余白バランス） -->
-                    <div class="bg-gradient-to-br from-orange-50/95 to-amber-50/70 rounded-xl p-2.5 border border-orange-200/90 shadow-xs shrink-0 flex flex-col justify-start gap-1.5">
+                    <!-- ③ 推奨服装カード（flex-1 で残りの高さを美しく活用し、iPadでも詰まり感を解消） -->
+                    <div class="bg-gradient-to-br from-orange-50/95 to-amber-50/70 rounded-xl p-2.5 border border-orange-200/90 shadow-xs flex-1 flex flex-col justify-between gap-1.5 min-h-0 overflow-hidden">
                         
                         <!-- 見出し & 体感温度 & 基準ラベル -->
                         <div class="flex items-center justify-between border-b border-orange-200/80 pb-1 shrink-0">
@@ -249,8 +250,8 @@
                         </div>
                     </div>
 
-                    <!-- ④ 左画面最下部: 地点登録・管理エリア -->
-                    <div class="bg-white rounded-xl p-1.5 border border-[#e5e5ea] shadow-xs space-y-1 shrink-0">
+                    <!-- ④ 左画面最下部: 地点登録・管理エリア（下に押し潰されず綺麗に配置） -->
+                    <div class="bg-white rounded-xl p-2 border border-[#e5e5ea] shadow-xs space-y-1.5 shrink-0">
                         <div class="flex items-center justify-between px-0.5">
                             <span class="text-[14px] font-extrabold text-[#1c1c1e] flex items-center gap-1 leading-none">
                                 <span>📍</span><span>登録地点の追加・管理</span>
@@ -264,16 +265,16 @@
                                 type="text" 
                                 id="locationInput" 
                                 placeholder="地名を入力（例: 新宿、横浜、札幌）" 
-                                class="flex-1 bg-[#f2f2f7] border border-[#d1d1d6] focus:border-[#ff9500] text-[#1c1c1e] text-[14px] rounded-lg px-2 py-0.5 outline-none truncate"
+                                class="flex-1 bg-[#f2f2f7] border border-[#d1d1d6] focus:border-[#ff9500] text-[#1c1c1e] text-[14px] rounded-lg px-2 py-1 outline-none truncate"
                                 onkeydown="if(event.key === 'Enter') handleAddLocation()"
                             >
-                            <button type="button" onclick="handleAddLocation()" class="ios-btn bg-[#007aff] hover:bg-[#0062cc] active:scale-95 text-white font-bold text-[14px] px-2.5 py-0.5 rounded-lg shrink-0 shadow-xs">
+                            <button type="button" onclick="handleAddLocation()" class="ios-btn bg-[#007aff] hover:bg-[#0062cc] active:scale-95 text-white font-bold text-[14px] px-3 py-1 rounded-lg shrink-0 shadow-xs">
                                 ＋追加
                             </button>
                         </div>
 
                         <!-- 登録済み地点タグ一覧 -->
-                        <div id="locationTagsContainer" class="flex flex-wrap items-center gap-1 max-h-[30px] overflow-y-auto pr-0.5">
+                        <div id="locationTagsContainer" class="flex flex-wrap items-center gap-1 max-h-[34px] overflow-y-auto pr-0.5">
                             <!-- JS生成 -->
                         </div>
                     </div>
@@ -281,7 +282,7 @@
                 </div>
 
                 <!-- ================= 右画面: 1時間ごとの推移 & 週間天気 (7カラム) ================= -->
-                <div class="md:col-span-7 flex flex-col justify-between gap-1.5 h-full overflow-hidden min-h-0">
+                <div class="md:col-span-7 flex flex-col justify-between gap-2 h-full overflow-hidden min-h-0">
                     
                     <!-- ① 1時間ごとの推移カード -->
                     <div class="bg-white rounded-xl p-2 border border-[#e5e5ea] shadow-xs flex-1 flex flex-col min-h-0 overflow-hidden">
@@ -291,7 +292,7 @@
                             </span>
                             <span class="text-[14px] font-bold text-[#8e8e93]">気象庁公式 ＆ 高精度モデル</span>
                         </div>
-                        <div class="grid grid-cols-6 text-center text-[15px] font-bold text-[#8e8e93] py-0.5 border-b border-[#f2f2f7] shrink-0 bg-[#f8f9fa] rounded-lg mt-0.5 px-2">
+                        <div class="grid grid-cols-6 text-center text-[15px] font-bold text-[#8e8e93] py-1 border-b border-[#f2f2f7] shrink-0 bg-[#f8f9fa] rounded-lg mt-1 px-2">
                             <span>時間</span>
                             <span>天気</span>
                             <span>気温</span>
@@ -304,7 +305,7 @@
                         </div>
                     </div>
 
-                    <!-- ② 週間天気カード (直近7日間ライトバージョン) -->
+                    <!-- ② 週間天気カード (直近7日間) -->
                     <div class="bg-white rounded-xl p-2 border border-[#e5e5ea] shadow-xs shrink-0">
                         <div class="flex items-center justify-between border-b border-[#f2f2f7] pb-1 mb-1">
                             <span class="text-[14px] font-extrabold text-[#1c1c1e] flex items-center gap-1.5">
@@ -683,12 +684,10 @@
             toggleSettingsModal(false);
         }
 
-        // プルダウンから雨判定基準パーセントを変更
         function handleRainThresholdChange(val) {
             const threshold = parseInt(val, 10) || DEFAULT_RAIN_THRESHOLD;
             localStorage.setItem(STORAGE_KEY_RAIN_THRESHOLD, threshold);
 
-            // 他の気象データや通信負荷はゼロのまま、雨予測テキストのみ即座に再評価
             if (cachedRawMeteoData) {
                 cachedNextRainInfo = calculateNextRain(cachedRawMeteoData);
                 const bannerEl = document.getElementById('nextRainText');
@@ -728,7 +727,6 @@
             const times = meteoData.hourly.time;
             const pops = meteoData.hourly.precipitation_probability || [];
             
-            // 判定閾値（デフォルト40%以上）
             const threshold = parseInt(localStorage.getItem(STORAGE_KEY_RAIN_THRESHOLD) || DEFAULT_RAIN_THRESHOLD, 10);
 
             const now = new Date();
