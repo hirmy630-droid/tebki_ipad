@@ -234,7 +234,7 @@
                         <div class="bg-white/95 rounded-lg px-2 py-1.5 border border-[#e5e5ea] space-y-1 shadow-2xs shrink-0">
                             <div class="flex items-center justify-between px-0.5">
                                 <span class="font-extrabold text-[#b45309] text-[13px] flex items-center gap-1 leading-none">
-                                    <span>🕒</span><span>朝・昼・夜の寒暖差目安</span>
+                                    <span>🕒</span><span>朝・昼・夜の体感寒暖差目安</span>
                                 </span>
                             </div>
                             <div id="timeTimeline" class="grid grid-cols-3 gap-1 text-center">
@@ -890,9 +890,25 @@
                         const m8 = hourly.time.indexOf(`${dateStr}T08:00`);
                         const m14 = hourly.time.indexOf(`${dateStr}T14:00`);
                         const m20 = hourly.time.indexOf(`${dateStr}T20:00`);
-                        if (m8 !== -1) morningTemp = Math.round(hourly.temperature_2m[m8]);
-                        if (m14 !== -1) noonTemp = Math.round(hourly.temperature_2m[m14]);
-                        if (m20 !== -1) nightTemp = Math.round(hourly.temperature_2m[m20]);
+                        
+                        // 朝・昼・夜の数値を実気温から「体感温度」に変更
+                        if (m8 !== -1 && hourly.apparent_temperature?.[m8] !== undefined) {
+                            morningTemp = Math.round(hourly.apparent_temperature[m8]);
+                        } else if (m8 !== -1) {
+                            morningTemp = Math.round(hourly.temperature_2m[m8]);
+                        }
+
+                        if (m14 !== -1 && hourly.apparent_temperature?.[m14] !== undefined) {
+                            noonTemp = Math.round(hourly.apparent_temperature[m14]);
+                        } else if (m14 !== -1) {
+                            noonTemp = Math.round(hourly.temperature_2m[m14]);
+                        }
+
+                        if (m20 !== -1 && hourly.apparent_temperature?.[m20] !== undefined) {
+                            nightTemp = Math.round(hourly.apparent_temperature[m20]);
+                        } else if (m20 !== -1) {
+                            nightTemp = Math.round(hourly.temperature_2m[m20]);
+                        }
 
                         let dayTemps = [];
                         for (let h = 8; h <= 17; h++) {
@@ -1030,17 +1046,17 @@
 
             document.getElementById('timeTimeline').innerHTML = `
                 <div class="bg-[#f8f9fa] rounded-md py-1 px-1 border border-[#e5e5ea] flex flex-col items-center justify-between">
-                    <div class="text-[#4b5563] text-[12px] font-bold leading-none">朝 (8時)</div>
+                    <div class="text-[#4b5563] text-[12px] font-bold leading-none">朝 (8時) 体感</div>
                     <div class="font-black text-[#1c1c1e] font-mono text-[15px] leading-none my-0.5">${data.morningTemp}℃</div>
                     <div class="text-[12px] font-extrabold text-[#374151] leading-none">${data.morningTemp <= 15 ? '羽織り推奨' : '快適'}</div>
                 </div>
                 <div class="bg-[#f8f9fa] rounded-md py-1 px-1 border border-[#e5e5ea] flex flex-col items-center justify-between">
-                    <div class="text-[#4b5563] text-[12px] font-bold leading-none">昼 (14時)</div>
+                    <div class="text-[#4b5563] text-[12px] font-bold leading-none">昼 (14時) 体感</div>
                     <div class="font-black text-orange-600 font-mono text-[15px] leading-none my-0.5">${data.noonTemp}℃</div>
                     <div class="text-[12px] font-extrabold text-[#374151] leading-none">${data.noonTemp >= 22 ? '上着不要' : '適温'}</div>
                 </div>
                 <div class="bg-[#f8f9fa] rounded-md py-1 px-1 border border-[#e5e5ea] flex flex-col items-center justify-between">
-                    <div class="text-[#4b5563] text-[12px] font-bold leading-none">夜 (20時)</div>
+                    <div class="text-[#4b5563] text-[12px] font-bold leading-none">夜 (20時) 体感</div>
                     <div class="font-black text-[#007aff] font-mono text-[15px] leading-none my-0.5">${data.nightTemp}℃</div>
                     <div class="text-[12px] font-extrabold text-[#374151] leading-none">${data.nightTemp <= 14 ? '冷え込み注意' : '過ごしやすい'}</div>
                 </div>

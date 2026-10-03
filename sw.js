@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kyowa-roof-weather-v1';
+const CACHE_NAME = 'kyowa-roof-weather-v2';
 const urlsToCache = [
   './',
   './index.html',
