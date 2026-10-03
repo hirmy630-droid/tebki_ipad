@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kyowa-roof-weather-v2';
+const CACHE_NAME = 'kyowa-roof-weather-v1';
 const urlsToCache = [
   './',
   './index.html',
@@ -18,7 +18,27 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        return response || fetch(event.request);
+        // キャッシュがあればそれを返す
+        if (response) {
+          return response;
+        }
+        // なければネットワークから取得
+        return fetch(event.request);
       })
+  );
+});
+
+self.addEventListener('activate', event => {
+  const cacheWhitelist = [CACHE_NAME];
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheWhitelist.indexOf(cacheName) === -1) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
   );
 });

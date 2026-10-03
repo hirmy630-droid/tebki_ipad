@@ -122,10 +122,9 @@
             <div class="max-w-[1600px] mx-auto w-full h-full grid grid-cols-1 md:grid-cols-12 gap-2 items-stretch min-h-0">
                 
                 <!-- ================= 左画面: 対象日の天気サマリー & 推奨服装 & 地点登録 (5カラム) ================= -->
-                <!-- 修正: iPadで上部が伸びすぎず、全体がバランスよく配分されるよう flex レイアウトを最適化 -->
                 <div class="md:col-span-5 flex flex-col gap-2 h-full overflow-hidden min-h-0">
                     
-                    <!-- ① 天気サマリーカード（過剰な縦伸びを抑制し、Mac版同様のコンパクトで整った比率に固定） -->
+                    <!-- ① 天気サマリーカード -->
                     <div class="bg-white rounded-xl pt-2 px-3 pb-1.5 border border-[#e5e5ea] shadow-xs shrink-0 flex flex-col justify-between overflow-hidden">
                         
                         <!-- 上部：引き締めた余白で視認性抜群の日付・アイコン・天気名・気温 -->
@@ -208,7 +207,7 @@
                         <span id="nextRainText" class="text-[14px] font-bold text-[#1c1c1e] min-w-0 flex-1 truncate">計算中...</span>
                     </div>
 
-                    <!-- ③ 推奨服装カード（flex-1 で残りの高さを美しく活用し、iPadでも詰まり感を解消） -->
+                    <!-- ③ 推奨服装カード -->
                     <div class="bg-gradient-to-br from-orange-50/95 to-amber-50/70 rounded-xl p-2.5 border border-orange-200/90 shadow-xs flex-1 flex flex-col justify-between gap-1.5 min-h-0 overflow-hidden">
                         
                         <!-- 見出し & 体感温度 & 基準ラベル -->
@@ -250,7 +249,7 @@
                         </div>
                     </div>
 
-                    <!-- ④ 左画面最下部: 地点登録・管理エリア（下に押し潰されず綺麗に配置） -->
+                    <!-- ④ 左画面最下部: 地点登録・管理エリア -->
                     <div class="bg-white rounded-xl p-2 border border-[#e5e5ea] shadow-xs space-y-1.5 shrink-0">
                         <div class="flex items-center justify-between px-0.5">
                             <span class="text-[14px] font-extrabold text-[#1c1c1e] flex items-center gap-1 leading-none">
@@ -311,7 +310,7 @@
                             <span class="text-[14px] font-extrabold text-[#1c1c1e] flex items-center gap-1.5">
                                 <span>📅</span><span>気象庁 週間天気予報 (直近7日間)</span>
                             </span>
-                            <span class="text-[14px] font-bold text-[#8e8e93]">公式降水確率 ＆ 気温推移</span>
+                            <span class="text-[13px] font-bold text-[#ff9500] bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full">タップで6時間毎の降水確率表示</span>
                         </div>
                         <div id="mainWeeklyList" class="grid grid-cols-7 gap-1">
                             <!-- JS生成 -->
@@ -322,6 +321,99 @@
 
             </div>
         </main>
+    </div>
+
+    <!-- 週間天気 日別6時間降水確率 ポップアップモーダル -->
+    <div id="weeklyDetailModal" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4" onclick="handleWeeklyModalBackdrop(event)">
+        <div class="bg-white border border-[#e5e5ea] rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
+            
+            <!-- モーダルヘッダー -->
+            <div class="bg-[#f8f9fa] border-b border-[#e5e5ea] px-4 py-3 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">📅</span>
+                    <div>
+                        <div id="wModalDateTitle" class="text-[16px] font-black text-[#1c1c1e] leading-tight">日付</div>
+                        <div id="wModalLocationSub" class="text-[12px] font-bold text-[#8e8e93] leading-none mt-0.5">地点名</div>
+                    </div>
+                </div>
+                <button type="button" onclick="closeWeeklyDetailModal()" class="w-8 h-8 rounded-full bg-[#e5e5ea] hover:bg-[#d1d1d6] active:scale-95 text-[#4b5563] hover:text-[#1c1c1e] flex items-center justify-center text-lg font-bold transition-all">
+                    ✕
+                </button>
+            </div>
+
+            <!-- モーダル本文 -->
+            <div class="p-4 space-y-3.5 overflow-y-auto">
+                
+                <!-- 天気概要カード -->
+                <div class="bg-gradient-to-r from-orange-50/80 to-blue-50/80 rounded-xl p-3 border border-[#e5e5ea] flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div id="wModalIcon" class="w-12 h-12 flex items-center justify-center"></div>
+                        <div>
+                            <div id="wModalWeatherText" class="text-[16px] font-black text-[#1c1c1e]">--</div>
+                            <div id="wModalWindText" class="text-[13px] font-bold text-[#4b5563] mt-0.5">風速: -- m/s</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-[13px] font-bold text-[#8e8e93]">予想気温</div>
+                        <div class="font-mono font-black text-[18px] leading-tight mt-0.5">
+                            <span id="wModalMaxTemp" class="text-[#e03131]">--</span><span class="text-xs text-[#e03131]">℃</span>
+                            <span class="text-gray-400 mx-0.5">/</span>
+                            <span id="wModalMinTemp" class="text-[#007aff]">--</span><span class="text-xs text-[#007aff]">℃</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6時間おきの降水確率枠 (メイン) -->
+                <div>
+                    <div class="flex items-center justify-between mb-1.5 px-0.5">
+                        <span class="text-[14px] font-extrabold text-[#1c1c1e] flex items-center gap-1.5">
+                            <span class="text-[#007aff]">💧</span><span>6時間おきの降水確率</span>
+                        </span>
+                        <span id="wModalRainRiskBadge" class="text-[12px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-900 border border-blue-200">
+                            算出中
+                        </span>
+                    </div>
+
+                    <!-- 4スロットカード -->
+                    <div class="grid grid-cols-4 gap-2 text-center font-mono">
+                        <div class="bg-[#f8f9fa] border border-[#d1d1d6] rounded-xl p-2 flex flex-col justify-between min-h-[78px]">
+                            <div class="text-[12px] font-bold text-[#8e8e93] leading-none">0-6時</div>
+                            <div id="wSlotPop0" class="text-[18px] font-black text-[#007aff] leading-none my-1">--%</div>
+                            <div id="wSlotTemp0" class="text-[12px] font-bold text-[#4b5563] leading-none">--℃</div>
+                        </div>
+                        <div class="bg-[#f8f9fa] border border-[#d1d1d6] rounded-xl p-2 flex flex-col justify-between min-h-[78px]">
+                            <div class="text-[12px] font-bold text-[#8e8e93] leading-none">6-12時</div>
+                            <div id="wSlotPop1" class="text-[18px] font-black text-[#007aff] leading-none my-1">--%</div>
+                            <div id="wSlotTemp1" class="text-[12px] font-bold text-[#4b5563] leading-none">--℃</div>
+                        </div>
+                        <div class="bg-[#f8f9fa] border border-[#d1d1d6] rounded-xl p-2 flex flex-col justify-between min-h-[78px]">
+                            <div class="text-[12px] font-bold text-[#8e8e93] leading-none">12-18時</div>
+                            <div id="wSlotPop2" class="text-[18px] font-black text-[#007aff] leading-none my-1">--%</div>
+                            <div id="wSlotTemp2" class="text-[12px] font-bold text-[#4b5563] leading-none">--℃</div>
+                        </div>
+                        <div class="bg-[#f8f9fa] border border-[#d1d1d6] rounded-xl p-2 flex flex-col justify-between min-h-[78px]">
+                            <div class="text-[12px] font-bold text-[#8e8e93] leading-none">18-24時</div>
+                            <div id="wSlotPop3" class="text-[18px] font-black text-[#007aff] leading-none my-1">--%</div>
+                            <div id="wSlotTemp3" class="text-[12px] font-bold text-[#4b5563] leading-none">--℃</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ワンポイントアドバイス -->
+                <div id="wModalAdviceBox" class="bg-blue-50/70 border border-blue-200/80 rounded-xl p-2.5 flex items-start gap-2 text-[13px] text-[#1c1c1e]">
+                    <span class="text-base shrink-0">💡</span>
+                    <span id="wModalAdviceText" class="leading-snug font-medium">--</span>
+                </div>
+
+            </div>
+
+            <!-- モーダルフッター -->
+            <div class="bg-[#f8f9fa] border-t border-[#e5e5ea] px-4 py-2.5 flex justify-end">
+                <button type="button" onclick="closeWeeklyDetailModal()" class="ios-btn bg-[#007aff] hover:bg-[#0062cc] active:scale-95 text-white font-bold px-5 py-1.5 rounded-lg text-[14px]">
+                    閉じる
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- 設定モーダル（雨判定パーセント設定など） -->
@@ -475,6 +567,7 @@
         let cachedForecastData = null;
         let cachedNextRainInfo = null;
         let cachedRawMeteoData = null;
+        let cachedRawJmaData = null;
 
         function switchResultDay(day) {
             selectedDay = day;
@@ -802,6 +895,7 @@
                 const jmaData = (jmaRes && jmaRes.ok) ? await jmaRes.json() : null;
                 const meteoData = (meteoRes && meteoRes.ok) ? await meteoRes.json() : null;
                 cachedRawMeteoData = meteoData;
+                cachedRawJmaData = jmaData;
 
                 cachedNextRainInfo = calculateNextRain(meteoData);
                 renderWeeklyList(meteoData, jmaData);
@@ -891,7 +985,6 @@
                         const m14 = hourly.time.indexOf(`${dateStr}T14:00`);
                         const m20 = hourly.time.indexOf(`${dateStr}T20:00`);
                         
-                        // 朝・昼・夜の数値を実気温から「体感温度」に変更
                         if (m8 !== -1 && hourly.apparent_temperature?.[m8] !== undefined) {
                             morningTemp = Math.round(hourly.apparent_temperature[m8]);
                         } else if (m8 !== -1) {
@@ -1165,13 +1258,15 @@
                 }
 
                 return `
-                    <div class="bg-[#f8f9fa] border border-[#e5e5ea] rounded-lg p-1 flex flex-col items-center justify-between text-center min-h-[96px]">
-                        <div>
+                    <div 
+                        onclick="openWeeklyDayDetailModal('${dateStr}')" 
+                        class="group cursor-pointer bg-[#f8f9fa] hover:bg-white active:bg-orange-50/50 border border-[#e5e5ea] hover:border-[#ff9500] hover:shadow-md active:scale-95 rounded-lg p-1 flex flex-col items-center justify-between text-center min-h-[96px] transition-all duration-150 relative">
+                        <div class="w-full">
                             <div class="text-[14px] font-bold text-[#8e8e93] font-mono leading-none">${d.getMonth() + 1}/${d.getDate()}</div>
                             <div class="text-[14px] font-black ${colorClass} leading-tight mt-0.5">(${dayNames[dayIndex]})</div>
                         </div>
 
-                        <div class="w-6 h-5 flex items-center justify-center my-0.5">${renderWeeklyListIcon(code || 0)}</div>
+                        <div class="w-6 h-5 flex items-center justify-center my-0.5 group-hover:scale-110 transition-transform">${renderWeeklyListIcon(code || 0)}</div>
 
                         <div class="flex items-baseline justify-center gap-1 font-mono font-black text-[14px] leading-tight my-0.5">
                             <span class="text-[#e03131]">${maxT ?? '--'}℃</span>
@@ -1180,9 +1275,179 @@
 
                         <div class="text-[14px] font-extrabold text-[#007aff] font-mono leading-none">💧${pop ?? 10}%</div>
                         <div class="text-[14px] font-bold text-[#4b5563] font-mono leading-none">💨${wSpeed}m/s</div>
+
+                        <!-- タップ誘導ミニインジケーター -->
+                        <span class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[#ff9500] opacity-0 group-hover:opacity-100 transition-opacity"></span>
                     </div>
                 `;
             }).join('');
+        }
+
+        function openWeeklyDayDetailModal(dateStr) {
+            const modal = document.getElementById('weeklyDetailModal');
+            if (!modal) return;
+
+            const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+            const targetDate = new Date(dateStr + 'T00:00:00');
+            const dayOfWeek = dayNames[targetDate.getDay()];
+            const formattedDate = `${targetDate.getMonth() + 1}月${targetDate.getDate()}日 (${dayOfWeek})`;
+
+            document.getElementById('wModalDateTitle').innerText = formattedDate;
+            document.getElementById('wModalLocationSub').innerText = `📍 ${activeLocation}`;
+
+            let pop6h = [null, null, null, null];
+            let temp6h = ['--', '--', '--', '--'];
+            let maxTemp = null;
+            let minTemp = null;
+            let maxWindSpeed = 2.0;
+            let weatherText = 'くもり';
+            let weatherCode = 2;
+
+            // ① 気象庁データの直近チェック (明日〜明後日のJMA 6時間毎データがある場合優先反映)
+            if (Array.isArray(cachedRawJmaData) && cachedRawJmaData.length > 0) {
+                const pArea = cachedRawJmaData[0]?.timeSeries?.[1]?.areas?.[0];
+                const pDef = cachedRawJmaData[0]?.timeSeries?.[1]?.timeDefines || [];
+                if (pArea?.pops) {
+                    pDef.forEach((t, idx) => {
+                        if (t.startsWith(dateStr) && pArea.pops[idx] !== '') {
+                            const v = parseInt(pArea.pops[idx], 10);
+                            if (t.includes('T00:00')) pop6h[0] = v;
+                            else if (t.includes('T06:00')) pop6h[1] = v;
+                            else if (t.includes('T12:00')) pop6h[2] = v;
+                            else if (t.includes('T18:00')) pop6h[3] = v;
+                        }
+                    });
+                }
+            }
+
+            // ② Open-Meteoの毎時データから正確に6時間スロットを補正・抽出
+            const hourly = cachedRawMeteoData?.hourly;
+            if (hourly?.time) {
+                const slotRanges = [
+                    { start: 0, end: 5, index: 0 },
+                    { start: 6, end: 11, index: 1 },
+                    { start: 12, end: 17, index: 2 },
+                    { start: 18, end: 23, index: 3 }
+                ];
+
+                slotRanges.forEach(slot => {
+                    let maxP = 0;
+                    let tempsInSlot = [];
+                    for (let h = slot.start; h <= slot.end; h++) {
+                        const timeKey = `${dateStr}T${String(h).padStart(2, '0')}:00`;
+                        const idx = hourly.time.indexOf(timeKey);
+                        if (idx !== -1) {
+                            if (hourly.precipitation_probability?.[idx] !== undefined && hourly.precipitation_probability[idx] !== null) {
+                                maxP = Math.max(maxP, Math.round(hourly.precipitation_probability[idx]));
+                            }
+                            if (hourly.temperature_2m?.[idx] !== undefined && hourly.temperature_2m[idx] !== null) {
+                                tempsInSlot.push(hourly.temperature_2m[idx]);
+                            }
+                        }
+                    }
+
+                    if (pop6h[slot.index] === null) {
+                        pop6h[slot.index] = maxP;
+                    }
+                    if (tempsInSlot.length > 0) {
+                        const avgT = Math.round(tempsInSlot.reduce((a, b) => a + b) / tempsInSlot.length);
+                        temp6h[slot.index] = `${avgT}℃`;
+                    }
+                });
+            }
+
+            // ③ 日付全体の最高・最低気温と天気
+            const daily = cachedRawMeteoData?.daily;
+            if (daily?.time) {
+                const mIdx = daily.time.indexOf(dateStr);
+                if (mIdx !== -1) {
+                    maxTemp = Math.round(daily.temperature_2m_max[mIdx]);
+                    minTemp = Math.round(daily.temperature_2m_min[mIdx]);
+                    maxWindSpeed = Math.round(daily.windspeed_10m_max[mIdx] / 3.6);
+                    weatherCode = daily.weathercode[mIdx];
+                }
+            }
+
+            // 気象庁の週間予報値もフォールバック確認
+            const jmaWeek = cachedRawJmaData?.[1]?.timeSeries;
+            const jmaTimes = jmaWeek?.[0]?.timeDefines || [];
+            const jIdx = jmaTimes.findIndex(t => t.startsWith(dateStr));
+            if (jIdx !== -1 && jmaWeek) {
+                if (maxTemp === null && jmaWeek[1]?.areas?.[0]?.tempsMax?.[jIdx]) maxTemp = parseInt(jmaWeek[1].areas[0].tempsMax[jIdx], 10);
+                if (minTemp === null && jmaWeek[1]?.areas?.[0]?.tempsMin?.[jIdx]) minTemp = parseInt(jmaWeek[1].areas[0].tempsMin[jIdx], 10);
+            }
+
+            // 6時間枠のnull対策
+            pop6h = pop6h.map(p => (p !== null ? p : 10));
+
+            // 天気概要のテキスト決定
+            const maxSlotPop = Math.max(...pop6h);
+            if ((weatherCode >= 51 && weatherCode <= 67) || (weatherCode >= 80 && weatherCode <= 82) || maxSlotPop >= 60) {
+                weatherText = '雨';
+            } else if (weatherCode === 0 || weatherCode === 1) {
+                weatherText = '晴れ';
+            } else if (weatherCode === 2) {
+                weatherText = '晴れ時々曇り';
+            } else {
+                weatherText = 'くもり';
+            }
+
+            // DOMに反映
+            document.getElementById('wModalWeatherText').innerText = weatherText;
+            document.getElementById('wModalIcon').innerHTML = renderWeatherSvgIcon(weatherText);
+            document.getElementById('wModalWindText').innerText = `風速: 約 ${maxWindSpeed} m/s (${getWindStateLabel(maxWindSpeed)})`;
+            document.getElementById('wModalMaxTemp').innerText = maxTemp !== null ? maxTemp : '--';
+            document.getElementById('wModalMinTemp').innerText = minTemp !== null ? minTemp : '--';
+
+            for (let i = 0; i < 4; i++) {
+                const popVal = pop6h[i];
+                const popEl = document.getElementById(`wSlotPop${i}`);
+                if (popEl) {
+                    popEl.innerText = `${popVal}%`;
+                    if (popVal >= 50) {
+                        popEl.className = 'text-[18px] font-black text-[#007aff] leading-none my-1';
+                    } else if (popVal >= 30) {
+                        popEl.className = 'text-[18px] font-black text-[#3b82f6] leading-none my-1';
+                    } else {
+                        popEl.className = 'text-[18px] font-black text-[#64748b] leading-none my-1';
+                    }
+                }
+                const tempEl = document.getElementById(`wSlotTemp${i}`);
+                if (tempEl) {
+                    tempEl.innerText = `平均 ${temp6h[i]}`;
+                }
+            }
+
+            // 雨リスクバッジとアドバイス
+            const riskBadge = document.getElementById('wModalRainRiskBadge');
+            const adviceText = document.getElementById('wModalAdviceText');
+            if (maxSlotPop >= 60) {
+                riskBadge.className = 'text-[12px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-900 border border-blue-300';
+                riskBadge.innerText = `雨の可能性 高 (${maxSlotPop}%)`;
+                adviceText.innerText = '外出時は傘の携帯が必須です。特に降水確率が高まっている時間帯の移動にはご注意ください。';
+            } else if (maxSlotPop >= 30) {
+                riskBadge.className = 'text-[12px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300';
+                riskBadge.innerText = `折りたたみ傘推奨 (${maxSlotPop}%)`;
+                adviceText.innerText = '所によりにわか雨の可能性があります。折りたたみ傘を持っておくと安心です。';
+            } else {
+                riskBadge.className = 'text-[12px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-900 border border-green-300';
+                riskBadge.innerText = `雨の心配ほぼなし (${maxSlotPop}%)`;
+                adviceText.innerText = '雨の心配はほとんどなく、屋外作業やお出かけも安心な予報です。';
+            }
+
+            // モーダルを開く
+            modal.classList.remove('hidden');
+        }
+
+        function closeWeeklyDetailModal() {
+            const modal = document.getElementById('weeklyDetailModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function handleWeeklyModalBackdrop(e) {
+            if (e.target.id === 'weeklyDetailModal') {
+                closeWeeklyDetailModal();
+            }
         }
         
         if ('serviceWorker' in navigator) {

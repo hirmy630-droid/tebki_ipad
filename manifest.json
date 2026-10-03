@@ -1,7 +1,8 @@
 {
-  "name": "KYOWA ROOF 天気予報",
+  "name": "明日の天気予報 - KYOWA ROOF",
   "short_name": "天気予報",
-  "start_url": "./index.html",
+  "description": "明日の天気予報と推奨服装を確認できるアプリです。",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#f2f2f7",
   "theme_color": "#f2f2f7",
@@ -14,12 +15,14 @@
     {
       "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
